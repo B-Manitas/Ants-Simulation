@@ -1,0 +1,28 @@
+CXX=clang++-7
+CXXFLAGS= -Wall -std=c++11 -g -O3
+EXEC_FILES= test coord ensCoord
+SRC= $(wildcard *.cpp)
+OBJ=$(SRC:.cpp=.o)
+
+all: $(EXEC_FILES)
+
+%.o: %.cpp
+	$(CXX) -o $@ -c $< $(CFLAGS
+
+test: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+$(OBJ): test.cpp
+
+check: test
+	./test -e
+
+clean:
+	rm -f $(OBJ) $(EXEC_FILES)
+
+
+
+============
+test: test.o coord.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
