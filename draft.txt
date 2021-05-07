@@ -26,3 +26,13 @@ clean:
 test: test.o coord.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+============
+TEST_CASE("Test du constructeur de la class Grille.")
+{
+
+  CHECK(Grille(1).grille == std::vector<std::vector<Place>>({{Place(Coord(0, 0))}}));
+  CHECK(Grille(2).grille == std::vector<std::vector<Place>>({{Place(Coord(0, 0)), Place(Coord(1, 0))},
+                                                             {Place(Coord(1, 0)), Place(Coord(1, 1))}}));
+
+  // CHECK(Grille(2).grille == EnsCoord({Coord(0, 0), Coord(1, 0), Coord(1, 0), Coord(1, 1)}));
+}

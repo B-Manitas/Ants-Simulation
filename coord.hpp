@@ -9,14 +9,14 @@ const int TAILLEGRILLE = 5;
 class Coord
 {
 private:
-  int lig;
-  int col;
+  int m_x;
+  int m_y;
 
 public:
-  Coord(int lig, int col);
+  Coord(int x, int y);
   Coord getCoord() const;
-  int getLig() const;
-  int getCol() const;
+  int getY() const;
+  int getX() const;
   friend std::ostream &operator<<(std::ostream &out, const Coord &coord);
   bool operator==(const Coord &coord) const;
   bool operator!=(const Coord &coord) const;
@@ -25,12 +25,12 @@ public:
 class EnsCoord
 {
 private:
-  std::vector<Coord> coords;
-  int position(const Coord &c) const;
+  std::vector<Coord> m_coords;
 
 public:
+  int position(const Coord &c) const;
   EnsCoord(){};
-  EnsCoord(std::vector<Coord> coords) : coords{coords} {};
+  EnsCoord(std::vector<Coord> coords) : m_coords{coords} {};
   friend std::ostream &operator<<(std::ostream &out, const EnsCoord &tableau);
   bool operator==(const EnsCoord &ens) const;
   bool contient(const Coord &c) const;
@@ -41,7 +41,7 @@ public:
   Coord ieme(const int &n) const;
 };
 
-EnsCoord voisines(Coord &c);
+EnsCoord voisines(Coord const &c);
 Coord choixHasard(EnsCoord const &ens);
 
 #endif

@@ -2,16 +2,19 @@
 #define GRILLE_HPP
 
 #include <vector>
+#include <iostream>
 #include "coord.hpp"
 #include "place.hpp"
 
-class Grille
+struct Grille
 {
-private:
-  std::vector<std::vector<Place>> grille;
+  std::vector<std::vector<Place>> m_grille;
 
-public:
-  Grille(){};
+  Grille() : m_grille(std::vector<std::vector<Place>>()){};
+  Grille(int taille);
+  friend std::ostream &operator<<(std::ostream &out, const Grille &g);
+
+  int taille() { return m_grille.size(); };
   Place chargePlace(Coord c);
   void rangePlace(Place p);
   void linearisePheroNid();

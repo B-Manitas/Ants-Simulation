@@ -6,9 +6,9 @@
 #include "coord.hpp"
 
 // Définition des méthodes de la classe Coord.
-Coord::Coord(int lig, int col) : lig{lig}, col{col}
+Coord::Coord(int x, int y) : m_x{x}, m_y{y}
 {
-  if (lig < 0 or col < 0 or lig > TAILLEGRILLE or col > TAILLEGRILLE)
+  if (y < 0 or x < 0 or y > TAILLEGRILLE or x > TAILLEGRILLE)
     throw std::invalid_argument("La coordonnées est en dehors de la grille.");
 }
 
@@ -19,32 +19,32 @@ TEST_CASE("Test du constructeur Coord")
   CHECK_THROWS_AS(Coord(TAILLEGRILLE + 5, TAILLEGRILLE + 5), std::invalid_argument);
 }
 
-int Coord::getLig() const
+int Coord::getY() const
 {
-  return lig;
+  return m_y;
 }
 
-int Coord::getCol() const
+int Coord::getX() const
 {
-  return col;
+  return m_x;
 }
 
 Coord Coord::getCoord() const
 {
-  return {lig, col};
+  return Coord({m_x, m_y});
 }
 
 TEST_CASE("Test du getter.")
 {
   Coord A = Coord{2, 3};
   CHECK(A.getCoord() == Coord{2, 3});
-  CHECK(A.getLig() == 2);
-  CHECK(A.getCol() == 3);
+  CHECK(A.getX() == 2);
+  CHECK(A.getY() == 3);
 }
 
 std::ostream &operator<<(std::ostream &out, const Coord &coord)
 {
-  return out << "(" << coord.getLig() << ", " << coord.getCol() << ")";
+  return out << "(" << coord.getX() << ", " << coord.getY() << ")";
 }
 
 TEST_CASE("Test de l'operateur <<")
@@ -56,7 +56,7 @@ TEST_CASE("Test de l'operateur <<")
 
 bool Coord::operator==(const Coord &coord) const
 {
-  return lig == coord.getLig() && col == coord.getCol();
+  return m_y == coord.getY() && m_x == coord.getX();
 }
 
 TEST_CASE("Test de l'operateur ==")
@@ -80,7 +80,7 @@ TEST_CASE("Test de l'operateur !=")
 
 std::ostream &operator<<(std::ostream &out, const EnsCoord &e)
 {
-  for (auto &val : e.coords)
+  for (auto &val : e.m_coords)
     out << val << ", ";
 
   return out;
@@ -102,11 +102,9 @@ TEST_CASE("Test de l'operateur << ")
 
 int EnsCoord::position(const Coord &c) const
 {
-  for (int i = 0; i < coords.size(); i++)
-  {
-    if (coords[i] == c)
+  for (int i = 0; i < m_coords.size(); i++)
+    if (m_coords[i] == c)
       return i;
-  }
 
   return -1;
 }
@@ -147,7 +145,7 @@ TEST_CASE("Test de l'opérateur ==")
 void EnsCoord::ajoute(const Coord c)
 {
   if (not contient(c))
-    coords.push_back(c);
+    m_coords.push_back(c);
 }
 
 TEST_CASE("Test de la méthode ajoute.")
@@ -163,7 +161,7 @@ TEST_CASE("Test de la méthode ajoute.")
 void EnsCoord::supprime(const Coord c)
 {
   if (contient(c))
-    coords.erase(coords.begin() + position(c));
+    m_coords.erase(m_coords.begin() + position(c));
 
   else
     throw std::runtime_error("La coordonnée n'a pas pu être supprimée.");
@@ -183,7 +181,7 @@ TEST_CASE("Test de la méthode supprime.")
 
 bool EnsCoord::estVide() const
 {
-  return coords.size() == 0;
+  return m_coords.size() == 0;
 }
 
 TEST_CASE("Test de la méthode estVide.")
@@ -194,7 +192,7 @@ TEST_CASE("Test de la méthode estVide.")
 
 int EnsCoord::taille() const
 {
-  return coords.size();
+  return m_coords.size();
 }
 
 TEST_CASE("Test de la méthode taille.")
@@ -206,7 +204,7 @@ TEST_CASE("Test de la méthode taille.")
 Coord EnsCoord::ieme(const int &n) const
 {
   if (n >= 0 and n < taille())
-    return coords[n];
+    return m_coords[n];
 
   else
     throw std::invalid_argument("Le paramètre n est en dehors des bornes de l'ensemble.");
@@ -221,23 +219,27 @@ TEST_CASE("Test de la méthode ieme.")
 }
 
 // Définition des autres fonctions.
-EnsCoord voisines(Coord const c)
+
+/**
+ * Fonction voisines.
+*/
+EnsCoord voisines(Coord const &c)
 {
   EnsCoord ens;
 
-  int lig = c.getLig();
-  int col = c.getCol();
+  int y = c.getY();
+  int x = c.getX();
 
-  int imin = std::max(lig - 1, 0);
-  int imax = std::min(lig + 1, TAILLEGRILLE - 1);
+  int ymin = std::max(y - 1, 0);
+  int ymax = std::min(y + 1, TAILLEGRILLE - 1);
 
-  int jmin = std::max(col - 1, 0);
-  int jmax = std::min(col + 1, TAILLEGRILLE - 1);
+  int xmin = std::max(x - 1, 0);
+  int xmax = std::min(x + 1, TAILLEGRILLE - 1);
 
-  for (int i = imin; i <= imax; i++)
-    for (int j = jmin; j <= jmax; j++)
-      if (i != lig or j != col)
-        ens.ajoute(Coord(i, j));
+  for (int l = ymin; l <= ymax; l++)
+    for (int c = xmin; c <= xmax; c++)
+      if (l != y or c != x)
+        ens.ajoute(Coord(c, l));
 
   return ens;
 }
