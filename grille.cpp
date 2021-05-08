@@ -1,7 +1,10 @@
 #include "grille.hpp"
 #include "place.hpp"
 #include "coord.hpp"
+#include "fourmi.hpp"
+#include "action.hpp"
 #include "doctest.h"
+#include <vector>
 
 Grille::Grille(int taille)
 {
@@ -10,7 +13,9 @@ Grille::Grille(int taille)
     m_grille.push_back(std::vector<Place>());
 
     for (int x = 0; x < taille; x++)
+    {
       m_grille[y].push_back(Place(Coord(x, y)));
+    }
   }
 }
 
@@ -113,4 +118,30 @@ void Grille::diminuePheroSucre()
       p.diminuerPheroSucre();
       rangePlace(p);
     }
+}
+
+void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille)
+{
+  Coord coordF = fourmi.getCoord();
+  Place pf = laGrille.chargePlace(coordF);
+  EnsCoord voisCoord = voisines(coordF);
+
+  for (int numRegle = 0; numRegle < 5; numRegle++)
+    for (int i = 0; i < voisCoord.taille(); i++)
+    {
+      Place vois = laGrille.chargePlace(voisCoord.ieme(i));
+      if (Action().condtion_n(numRegle, fourmi, pf, vois))
+      {
+        Action().action_n(numRegle, fourmi, pf, vois);
+        laGrille.rangePlace(pf);
+        laGrille.rangePlace(vois);
+        return;
+      }
+    }
+}
+
+void mettreAJourEnsFourmis(Grille laGrille, std::vector<Fourmi> lesFourmis)
+{
+  for (int i = 0; i < lesFourmis.size(); i++)
+    mettreAJourUneFourmi(lesFourmis[i], laGrille);
 }

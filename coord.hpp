@@ -13,6 +13,7 @@ private:
   int m_y;
 
 public:
+  Coord(){};
   Coord(int x, int y);
   Coord getCoord() const;
   int getY() const;

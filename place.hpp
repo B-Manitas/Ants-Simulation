@@ -1,9 +1,9 @@
 #ifndef PLACE_H
 #define PLACE_H
 
-#include <iostream>
 #include "coord.hpp"
 #include "fourmi.hpp"
+#include <iostream>
 
 class Place
 {
@@ -26,25 +26,22 @@ public:
   // Les méthodes générales.
   bool contientSucre() const { return m_pheroSucre > 0; };
   bool contientNid() const { return m_pheroNid == 1; };
-  bool contientFourmis() const { return m_numeroFourmi != -1; };
+  bool contientFourmi() const { return m_numeroFourmi != -1; };
+  bool estVide() const { return not(contientSucre() && contientNid() && contientFourmi()); }
   bool estSurUnePiste() const { return m_pheroNid > 0 && not contientNid(); };
-  void poseSucre() { m_pheroSucre = 255; };
+  void poseSucre();
   void enleveSucre() { m_pheroSucre = 0; };
-  void poseNid() { m_pheroNid = 1; };
+  void poseNid();
   void poseFourmi(Fourmi fourmi);
-  void enleveFourmi() { m_numeroFourmi = -1; };
+  void enleveFourmi();
   void posePheroNid(double quantite);
-  void posePheroSucre(double quantite);
+  void posePheroSucre(double quantite = 255);
   void diminuerPheroSucre();
   bool operator==(const Place &p) const;
   friend std::ostream &operator<<(std::ostream &out, const Place &place);
 };
 
-// Les procédures.
-void deplaceFourmi(Fourmi fourmi, Place p1, Place p2);
-
-// Les prédicats.
-bool estVide();
 bool estPlusProcheNid(Place p1, Place p2);
+void deplaceFourmi(Fourmi fourmi, Place p1, Place p2);
 
 #endif

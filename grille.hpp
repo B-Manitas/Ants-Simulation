@@ -5,6 +5,7 @@
 #include <iostream>
 #include "coord.hpp"
 #include "place.hpp"
+#include "fourmi.hpp"
 
 struct Grille
 {
@@ -20,5 +21,8 @@ struct Grille
   void linearisePheroNid();
   void diminuePheroSucre();
 };
+
+void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille);
+void mettreAJourEnsFourmis(Grille laGrille, std::vector<Fourmi> lesFourmis);
 
 #endif

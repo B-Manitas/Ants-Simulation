@@ -218,11 +218,6 @@ TEST_CASE("Test de la méthode ieme.")
   CHECK_THROWS_AS(ens.ieme(2), std::invalid_argument);
 }
 
-// Définition des autres fonctions.
-
-/**
- * Fonction voisines.
-*/
 EnsCoord voisines(Coord const &c)
 {
   EnsCoord ens;

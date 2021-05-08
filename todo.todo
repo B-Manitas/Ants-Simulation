@@ -1,0 +1,9 @@
+Place:
+  Vérifier qu'une case ne possède pas : 
+  ✔ Plusieurs fourmi @done(21-05-07 22:18)
+  ✔ Sucre et fourmi (Sauf si le sucre et porté par la fourmi) @done(21-05-07 22:19)
+  ✔ Nid et fourmi @done(21-05-07 22:19)
+
+
+Grille:
+  Le vecteur grille peut contenir un tuple avec la fourmi et la place

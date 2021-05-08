@@ -36,3 +36,5 @@ TEST_CASE("Test du constructeur de la class Grille.")
 
   // CHECK(Grille(2).grille == EnsCoord({Coord(0, 0), Coord(1, 0), Coord(1, 0), Coord(1, 1)}));
 }
+
+=========

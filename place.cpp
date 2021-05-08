@@ -1,7 +1,20 @@
-#include <sstream>
 #include "place.hpp"
+#include "fourmi.hpp"
 #include "coord.hpp"
 #include "doctest.h"
+#include <sstream>
+
+void Place::poseSucre()
+{
+  if (not contientFourmi())
+    m_pheroSucre = 255;
+};
+
+void Place::poseNid()
+{
+  if (not contientFourmi())
+    m_pheroNid = 1;
+};
 
 void Place::posePheroSucre(double quantite)
 {
@@ -21,8 +34,15 @@ void Place::posePheroNid(double quantite)
 
 void Place::poseFourmi(Fourmi fourmi)
 {
-  if (m_numeroFourmi == -1)
+  if (not contientFourmi() && (not contientSucre() || fourmi.getContientSucre()) && not contientNid())
+  {
     m_numeroFourmi = fourmi.getNum();
+  }
+};
+
+void Place::enleveFourmi()
+{
+  m_numeroFourmi = -1;
 };
 
 void Place::diminuerPheroSucre()
@@ -37,8 +57,13 @@ TEST_CASE("Test des méthodes de la classe Place.")
   Place p = Place(Coord(0, 0));
   CHECK_FALSE(p.contientSucre());
   CHECK_FALSE(p.contientNid());
-  CHECK_FALSE(p.contientFourmis());
+  CHECK_FALSE(p.contientFourmi());
   CHECK_FALSE(p.estSurUnePiste());
+  CHECK(p.estVide());
+  p.poseFourmi(Fourmi(c, 0));
+  CHECK(p.contientFourmi());
+  CHECK(p.getNumeroFourmi() == 0);
+  p.enleveFourmi();
   p.poseSucre();
   CHECK(p.getPheroSucre() == 255);
   p.enleveSucre();
@@ -46,10 +71,9 @@ TEST_CASE("Test des méthodes de la classe Place.")
   p.poseNid();
   CHECK(p.getPheroNid() == 1);
   p.poseFourmi(Fourmi(c, 0));
-  CHECK(p.contientFourmis());
-  CHECK(p.getNumeroFourmi() == 0);
-  p.enleveFourmi();
-  CHECK_FALSE(p.contientFourmis());
+  CHECK_FALSE(p.contientFourmi());
+  p.enleveSucre();
+  CHECK_FALSE(p.contientFourmi());
   p.posePheroNid(2);
   CHECK(p.getPheroNid() == 1);
   p.posePheroSucre(300);
@@ -87,27 +111,13 @@ TEST_CASE("Test de l'operateur <<")
   CHECK(stream.str() == "(2, 3)");
 }
 
-/**
- * Déplace la fourmi de la place p1 vers la place p2.
- * @param fourmis La fourmis à déplacer.
- * @param p1 La place actuelle.
- * @param p2 La nouvelle place de la fourmi.
-*/
 void deplaceFourmi(Fourmi fourmi, Place p1, Place p2)
 {
   p1.enleveFourmi();
   p2.poseFourmi(fourmi);
 }
 
-/**
- * Revoie true si la place est vide.
-*/
-bool estVide(Place p)
+bool estPlusProcheNid(Place p1, Place p2)
 {
-  return p.getNumeroFourmi() == -1 && (not p.contientNid()) && (not p.contientSucre());
-}
-
-/**
- * Renvoie true si p1 est plus proche du nid que p2.
-*/
-bool estPlusProcheNid(Place p1, Place p2) { return p1.getPheroNid() > p2.getPheroNid(); }
+  return p1.getPheroNid() > p2.getPheroNid();
+};
