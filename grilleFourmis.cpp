@@ -1,7 +1,18 @@
-#include "doctest.h"
-#include "fourmi.hpp"
 #include "grilleFourmis.hpp"
+#include "fourmi.hpp"
 #include "coord.hpp"
+#include "doctest.h"
+
+GrilleFourmis::GrilleFourmis(int taille)
+{
+  for (int y = 0; y < taille; y++)
+  {
+    m_grilleF.push_back(std::vector<Fourmi>());
+
+    for (int x = 0; x < taille; x++)
+      m_grilleF[y].push_back(Fourmi());
+  }
+}
 
 Fourmi GrilleFourmis::chargeFourmi(Coord c)
 {
@@ -30,6 +41,7 @@ Fourmi GrilleFourmis::chercheFourmi(int idFourmi)
   throw std::runtime_error("Aucune fourmis possède n'a été trouvé avec ce numéro.");
 }
 
+TEST_SUITE_BEGIN("Test de la classe GrilleFourmis.");
 TEST_CASE("Test des méthodes de la classe GrilleFOurmis.")
 {
   Fourmi f = Fourmi(Coord(0, 0), 1);
@@ -38,3 +50,4 @@ TEST_CASE("Test des méthodes de la classe GrilleFOurmis.")
   CHECK(g.chargeFourmi(f.getCoord()).getNum() == f.getNum());
   CHECK(g.chercheFourmi(1).getNum() == f.getNum());
 }
+TEST_SUITE_END();

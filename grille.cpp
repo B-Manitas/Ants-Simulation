@@ -46,28 +46,9 @@ Place Grille::chargePlace(const Coord c)
     throw std::runtime_error("La coordonnées est en dehors du tableau.");
 }
 
-TEST_CASE("Test de la fonction chargePlace.")
-{
-  CHECK(Grille(1).chargePlace(Coord(0, 0)) == Place(Coord(0, 0)));
-  CHECK(Grille(5).chargePlace(Coord(4, 4)) == Place(Coord(4, 4)));
-  CHECK_THROWS_AS(Grille(5).chargePlace(Coord(5, 4)), std::runtime_error);
-  CHECK_THROWS_AS(Grille(5).chargePlace(Coord(4, 5)), std::runtime_error);
-}
-
 void Grille::rangePlace(Place p)
 {
   m_grille[p.getCoord().getY()][p.getCoord().getX()] = p;
-}
-
-TEST_CASE("Test de la fonction chargePlace.")
-{
-  Grille g = Grille(2);
-  Coord c = Coord(1, 0);
-  Place p = g.chargePlace(c);
-  p.poseSucre();
-  g.rangePlace(p);
-
-  CHECK(g.chargePlace(c) == p);
 }
 
 void Grille::linearisePheroNid()
@@ -140,8 +121,31 @@ void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille)
     }
 }
 
-void mettreAJourEnsFourmis(Grille laGrille, std::vector<Fourmi> lesFourmis)
+void mettreAJourEnsFourmis(Grille laGrille, std::vector<std::vector<Fourmi>> lesFourmis)
 {
-  for (int i = 0; i < lesFourmis.size(); i++)
-    mettreAJourUneFourmi(lesFourmis[i], laGrille);
+
+  for (int y = 9; y < lesFourmis.size(); y++)
+    for (int x = 9; x < lesFourmis[y].size(); x++)
+      mettreAJourUneFourmi(lesFourmis[y][x], laGrille);
 }
+
+TEST_SUITE_BEGIN("Test de la classe Grille.");
+TEST_CASE("Test de la fonction chargePlace.")
+{
+  CHECK(Grille(1).chargePlace(Coord(0, 0)) == Place(Coord(0, 0)));
+  CHECK(Grille(5).chargePlace(Coord(4, 4)) == Place(Coord(4, 4)));
+  CHECK_THROWS_AS(Grille(5).chargePlace(Coord(5, 4)), std::runtime_error);
+  CHECK_THROWS_AS(Grille(5).chargePlace(Coord(4, 5)), std::runtime_error);
+}
+
+TEST_CASE("Test de la fonction chargePlace.")
+{
+  Grille g = Grille(2);
+  Coord c = Coord(1, 0);
+  Place p = g.chargePlace(c);
+  p.poseSucre();
+  g.rangePlace(p);
+
+  CHECK(g.chargePlace(c) == p);
+}
+TEST_SUITE_END();

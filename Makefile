@@ -6,4 +6,12 @@ test: test.o coord.o fourmi.o place.o grille.o action.o
 
 run-test: test
 	./test
-	
+
+principal.o: principal.hpp coord.hpp fourmi.hpp place.hpp grille.hpp grilleFourmis.hpp action.hpp
+	g++ -Wall -std=c++11 -c principal.cpp
+
+principal: principal.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
+	g++ -Wall -std=c++11 -o principal principal.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
+
+run-principal: principal
+	./principal

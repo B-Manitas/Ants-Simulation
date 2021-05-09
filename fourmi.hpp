@@ -11,7 +11,7 @@ private:
   bool m_contientSucre;
 
 public:
-  Fourmi() : m_coord{Coord()}, m_num{-1} {};
+  Fourmi() : m_coord{Coord()}, m_num{-1}, m_contientSucre{false} {};
   Fourmi(Coord c, int numero);
   Coord getCoord() const { return m_coord; };
   int getNum() const { return m_num; };
@@ -21,8 +21,5 @@ public:
   void poseSucre() { m_contientSucre = false; }
   bool operator==(const Fourmi &f) const;
 };
-
-// void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille) {}
-// void mettreAJourEnsFourmis(Grille laGrille, std::vector<Fourmi> lesFourmis);
 
 #endif

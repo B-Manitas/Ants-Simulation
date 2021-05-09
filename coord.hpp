@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-const int TAILLEGRILLE = 5;
+const int TAILLEGRILLE = 20;
 
 class Coord
 {
@@ -27,9 +27,9 @@ class EnsCoord
 {
 private:
   std::vector<Coord> m_coords;
+  int position(const Coord &c) const;
 
 public:
-  int position(const Coord &c) const;
   EnsCoord(){};
   EnsCoord(std::vector<Coord> coords) : m_coords{coords} {};
   friend std::ostream &operator<<(std::ostream &out, const EnsCoord &tableau);

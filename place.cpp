@@ -51,6 +51,29 @@ void Place::diminuerPheroSucre()
     m_pheroSucre -= 5;
 };
 
+bool Place::operator==(const Place &p) const
+{
+  return ((m_coord == p.getCoord()) && (m_pheroSucre == p.getPheroSucre()) && (m_pheroNid == p.getPheroNid()) && (m_numeroFourmi == getNumeroFourmi()));
+}
+
+std::ostream &operator<<(std::ostream &out, const Place &place)
+{
+  return out << place.getCoord();
+}
+
+void deplaceFourmi(Fourmi fourmi, Place p1, Place p2)
+{
+  p1.enleveFourmi();
+  p2.poseFourmi(fourmi);
+}
+
+bool estPlusProcheNid(Place p1, Place p2)
+{
+  return p1.getPheroNid() > p2.getPheroNid();
+};
+
+TEST_SUITE_BEGIN("Test de la classe Place.");
+
 TEST_CASE("Test des méthodes de la classe Place.")
 {
   Coord c = Coord(0, 0);
@@ -82,11 +105,6 @@ TEST_CASE("Test des méthodes de la classe Place.")
   CHECK(p.getPheroSucre() == 250);
 }
 
-bool Place::operator==(const Place &p) const
-{
-  return ((m_coord == p.getCoord()) && (m_pheroSucre == p.getPheroSucre()) && (m_pheroNid == p.getPheroNid()) && (m_numeroFourmi == getNumeroFourmi()));
-}
-
 TEST_CASE("Test de l'operator==.")
 {
   Place p = Place(Coord(0, 0));
@@ -99,11 +117,6 @@ TEST_CASE("Test de l'operator==.")
   CHECK_FALSE(p2 == p3);
 }
 
-std::ostream &operator<<(std::ostream &out, const Place &place)
-{
-  return out << place.getCoord();
-}
-
 TEST_CASE("Test de l'operateur <<")
 {
   std::ostringstream stream;
@@ -111,13 +124,4 @@ TEST_CASE("Test de l'operateur <<")
   CHECK(stream.str() == "(2, 3)");
 }
 
-void deplaceFourmi(Fourmi fourmi, Place p1, Place p2)
-{
-  p1.enleveFourmi();
-  p2.poseFourmi(fourmi);
-}
-
-bool estPlusProcheNid(Place p1, Place p2)
-{
-  return p1.getPheroNid() > p2.getPheroNid();
-};
+TEST_SUITE_END();
