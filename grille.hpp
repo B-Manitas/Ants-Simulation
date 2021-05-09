@@ -20,6 +20,7 @@ struct Grille
   void rangePlace(Place p);
   void linearisePheroNid();
   void diminuePheroSucre();
+  Place randPlace();
 };
 
 void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille);

@@ -101,6 +101,11 @@ void Grille::diminuePheroSucre()
     }
 }
 
+Place Grille::randPlace()
+{
+  return chargePlace(Coord(std::rand() % taille(), std::rand() % taille()));
+}
+
 void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille)
 {
   Coord coordF = fourmi.getCoord();
