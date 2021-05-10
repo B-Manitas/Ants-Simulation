@@ -3,10 +3,11 @@
 #include "coord.hpp"
 #include "fourmi.hpp"
 #include "action.hpp"
+#include "grilleFourmis.hpp"
 #include "doctest.h"
 #include <vector>
 
-Grille::Grille(int taille)
+Grille::Grille(int const taille)
 {
   for (int y = 0; y < taille; y++)
   {
@@ -43,10 +44,10 @@ Place Grille::chargePlace(const Coord c)
     return m_grille[cY][cX];
 
   else
-    throw std::runtime_error("La coordonnées est en dehors du tableau.");
+    throw std::runtime_error("La coordonnée est en dehors de la grille.");
 }
 
-void Grille::rangePlace(Place p)
+void Grille::rangePlace(Place &p)
 {
   m_grille[p.getCoord().getY()][p.getCoord().getX()] = p;
 }
@@ -106,32 +107,51 @@ Place Grille::randPlace()
   return chargePlace(Coord(std::rand() % taille(), std::rand() % taille()));
 }
 
-void mettreAJourUneFourmi(Fourmi fourmi, Grille laGrille)
+void mettreAJourUneFourmi(Coord c, Grille &laGrille, GrilleFourmis &lesFourmis)
 {
-  Coord coordF = fourmi.getCoord();
-  Place pf = laGrille.chargePlace(coordF);
-  EnsCoord voisCoord = voisines(coordF);
+  Place pf = laGrille.chargePlace(c);
+  EnsCoord voisCoord = voisines(c);
 
-  for (int numRegle = 0; numRegle < 5; numRegle++)
+  std::vector<int> action_i = std::vector<int>{2, 3, 4, 7};
+  for (size_t numRegle = 0; numRegle < action_i.size(); numRegle++)
     for (int i = 0; i < voisCoord.taille(); i++)
     {
-      Place vois = laGrille.chargePlace(voisCoord.ieme(i));
-      if (Action().condtion_n(numRegle, fourmi, pf, vois))
+      if (lesFourmis.contientFourmisCoord(c))
       {
-        Action().action_n(numRegle, fourmi, pf, vois);
-        laGrille.rangePlace(pf);
-        laGrille.rangePlace(vois);
-        return;
+        Place vois = laGrille.chargePlace(voisCoord.ieme(i));
+        Fourmi fourmi = lesFourmis.chargeFourmi(c);
+        // std::cout << fourmi << std::endl;
+        // std::cout << numRegle << std::endl;
+        // std::cout << action_i[numRegle] << std::endl;
+        if (Action().condtion_n(action_i[numRegle], fourmi, pf, vois))
+        {
+          Action().action_n(action_i[numRegle], fourmi, pf, vois);
+          laGrille.rangePlace(pf);
+          laGrille.rangePlace(vois);
+          lesFourmis.rangeFourmi(fourmi);
+          return;
+        }
       }
+      else
+        return;
     }
 }
 
-void mettreAJourEnsFourmis(Grille laGrille, std::vector<std::vector<Fourmi>> lesFourmis)
+void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis)
 {
+  for (int y = 0; y < lesFourmis.taille(); y++)
+    for (int x = 0; x < lesFourmis.taille(); x++)
+    {
+      mettreAJourUneFourmi(Coord(x, y), laGrille, lesFourmis);
 
-  for (int y = 9; y < lesFourmis.size(); y++)
-    for (int x = 9; x < lesFourmis[y].size(); x++)
-      mettreAJourUneFourmi(lesFourmis[y][x], laGrille);
+      // Fourmi f = lesFourmis.chargeFourmi(Coord(x, y));
+      // Fourmi f2 = f;
+      // mettreAJourUneFourmi(lesFourmis.chargeFourmi(Coord(x, y)), laGrille);
+      // if (not(f == f2))
+      //   std::cout << f << " et " << f2 << std::endl;
+
+      // lesFourmis.rangeFourmi(f);
+    }
 }
 
 TEST_SUITE_BEGIN("Test de la classe Grille.");

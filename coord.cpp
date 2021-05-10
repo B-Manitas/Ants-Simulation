@@ -177,9 +177,9 @@ EnsCoord voisines(Coord const &c)
   return ens;
 }
 
-Coord choiXHasard(EnsCoord const &ens)
+Coord choixHasard(EnsCoord const &ens)
 {
-  return ens.ieme(std::rand() % (ens.taille() + 1));
+  return ens.ieme(std::rand() % ens.taille());
 }
 
 TEST_SUITE_BEGIN("Test de la fonction EnsCoord.");
@@ -280,6 +280,6 @@ TEST_CASE("Test de la fonction voisines")
 TEST_CASE("Test de la fonction choixHasard")
 {
   EnsCoord ens = EnsCoord(std::vector<Coord>({Coord(1, 0), Coord(1, 1), Coord(1, 2)}));
-  CHECK(ens.contient(choiXHasard(ens)));
+  CHECK(ens.contient(choixHasard(ens)));
 }
 TEST_SUITE_END();

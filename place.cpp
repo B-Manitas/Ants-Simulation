@@ -7,7 +7,7 @@
 void Place::poseSucre()
 {
   if (not contientFourmi())
-    m_pheroSucre = 255;
+    m_contientSucre = true;
 };
 
 void Place::poseNid()
@@ -34,7 +34,7 @@ void Place::posePheroNid(double quantite)
 
 void Place::poseFourmi(Fourmi fourmi)
 {
-  if (not contientFourmi() && (not contientSucre() || fourmi.getContientSucre()) && not contientNid())
+  if (not contientFourmi() && (not contientSucre() || fourmi.chercheSucre()) && not contientNid())
   {
     m_numeroFourmi = fourmi.getNum();
   }
@@ -53,17 +53,27 @@ void Place::diminuerPheroSucre()
 
 bool Place::operator==(const Place &p) const
 {
-  return ((m_coord == p.getCoord()) && (m_pheroSucre == p.getPheroSucre()) && (m_pheroNid == p.getPheroNid()) && (m_numeroFourmi == getNumeroFourmi()));
+  return (m_coord == p.getCoord() and
+          m_pheroSucre == p.getPheroSucre() and
+          m_pheroNid == p.getPheroNid() and
+          m_numeroFourmi == p.getNumeroFourmi() and
+          m_contientSucre == p.contientSucre());
 }
 
 std::ostream &operator<<(std::ostream &out, const Place &place)
 {
-  return out << place.getCoord();
+  out << "{ "
+      << "Coord: " << place.getCoord() << ", "
+      << "Num Fourmi: " << place.getNumeroFourmi() << ", "
+      << "Phero Nid: " << place.getPheroNid() << ", "
+      << "Phero Sucre: " << place.getPheroSucre() << " }";
+  return out;
 }
 
-void deplaceFourmi(Fourmi fourmi, Place p1, Place p2)
+void deplaceFourmi(Fourmi &fourmi, Place &p1, Place &p2)
 {
   p1.enleveFourmi();
+  fourmi.deplace(p2.getCoord());
   p2.poseFourmi(fourmi);
 }
 
@@ -88,7 +98,7 @@ TEST_CASE("Test des méthodes de la classe Place.")
   CHECK(p.getNumeroFourmi() == 0);
   p.enleveFourmi();
   p.poseSucre();
-  CHECK(p.getPheroSucre() == 255);
+  CHECK(p.contientSucre());
   p.enleveSucre();
   CHECK(p.getPheroSucre() == 0);
   p.poseNid();
@@ -117,11 +127,31 @@ TEST_CASE("Test de l'operator==.")
   CHECK_FALSE(p2 == p3);
 }
 
-TEST_CASE("Test de l'operateur <<")
+TEST_CASE("Test de l'operateur <<.")
 {
   std::ostringstream stream;
   stream << Place(Coord(2, 3));
-  CHECK(stream.str() == "(2, 3)");
+
+  std::ostringstream streamCheck;
+  streamCheck << "{ Coord: (2, 3), "
+              << "Num Fourmi: -1, "
+              << "Phero Nid: 0, "
+              << "Phero Sucre: 0 }";
+
+  CHECK(stream.str() == streamCheck.str());
+}
+
+TEST_CASE("Test de la fonction deplaceFourmis.")
+{
+  Coord c = Coord(0, 0);
+  Place p1 = Place(c);
+  Place p2 = Place(Coord(0, 1));
+  Fourmi f = Fourmi(c, 1);
+
+  deplaceFourmi(f, p1, p2);
+  CHECK_FALSE(p1.contientFourmi());
+  CHECK(p2.contientFourmi());
+  CHECK(f.getCoord() == p2.getCoord());
 }
 
 TEST_SUITE_END();

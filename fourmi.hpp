@@ -1,6 +1,7 @@
 #ifndef Fourmi_HPP
 #define Fourmi_HPP
 #include "coord.hpp"
+// #include "place.hpp"
 // #include "grille.hpp"
 
 class Fourmi
@@ -15,11 +16,12 @@ public:
   Fourmi(Coord c, int numero);
   Coord getCoord() const { return m_coord; };
   int getNum() const { return m_num; };
-  bool getContientSucre() const { return m_contientSucre; };
-  void setContientSucre(bool contientSucre) { m_contientSucre = contientSucre; }
+  bool chercheSucre() const { return not m_contientSucre; };
   void porteSucre() { m_contientSucre = true; }
   void poseSucre() { m_contientSucre = false; }
+  void deplace(Coord const &c) { m_coord = c; };
   bool operator==(const Fourmi &f) const;
+  friend std::ostream &operator<<(std::ostream &out, const Fourmi &f);
 };
 
 #endif

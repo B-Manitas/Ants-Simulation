@@ -7,3 +7,8 @@ Place:
 
 Grille:
   Le vecteur grille peut contenir un tuple avec la fourmi et la place
+
+Test Incoherence: 
+  ☐ Incoherence entre le numero de la fourmi et la numero de la place. Pour une même coord
+  ☐ La fourmi possède une coord en dehors de la grille
+  ☐ Une place possède une fourmi qui n'existe pas
