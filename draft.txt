@@ -59,3 +59,86 @@ TEST_CASE("Test du constructeur de la class Grille.")
       }
     }
 }
+
+==============
+    // dessineVecteur(lesFourmis.m_grilleF);
+
+    // std::cout << "\nSimu: " << i << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "Les Fourmis: " << lesFourmis << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "Les Fourmis: " << lesFourmis << std::endl;
+    // std::cout << "\nFin" << std::endl;
+
+==========
+// void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmis);
+// void dessine2DVecteur(std::vector<std::vector<Fourmi>> &t);
+
+=============
+void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmis)
+{
+  EnsCoord centre = EnsCoord();
+  int idF = 0;
+  for (int y = TAILLEGRILLE / 2 - 2; y < TAILLEGRILLE / 2 + 2; y++)
+    for (int x = TAILLEGRILLE / 2 - 2; x < TAILLEGRILLE / 2 + 2; x++)
+    {
+      Coord c = Coord(x, y);
+      centre.ajoute(c);
+      if (x >= TAILLEGRILLE / 2 - 1 && x < TAILLEGRILLE / 2 + 1 && y >= TAILLEGRILLE / 2 - 1 && y < TAILLEGRILLE / 2 + 1)
+      {
+        Place pNid = Place(c);
+        pNid.poseNid();
+        laGrille.rangePlace(pNid);
+      }
+      else
+      {
+        Place pF = Place(c);
+        Fourmi f = Fourmi(c, idF);
+        pF.poseFourmi(f);
+        laGrille.rangePlace(pF);
+        lesFourmis.rangeFourmi(f);
+        idF++;
+      }
+    }
+
+  Place pSucre = laGrille.randPlace();
+
+  while (centre.contient(pSucre.getCoord()))
+    pSucre = laGrille.randPlace();
+
+  pSucre.poseSucre();
+  laGrille.rangePlace(pSucre);
+  testCoherence(laGrille, lesFourmis, "Initialisation");
+}
+
+===================
+TEST_CASE("Test des méthodes de la classe Place.")
+{
+  Coord c = Coord(0, 0);
+  Place p = Place(Coord(0, 0));
+  CHECK_FALSE(p.contientSucre());
+  CHECK_FALSE(p.contientNid());
+  CHECK_FALSE(p.contientFourmi());
+  CHECK_FALSE(p.estSurUnePiste());
+  CHECK(p.estVide());
+  p.poseFourmi(Fourmi(c, 0));
+  CHECK(p.contientFourmi());
+  CHECK(p.getNumeroFourmi() == 0);
+  p.enleveFourmi();
+  p.poseSucre();
+  CHECK(p.contientSucre());
+  p.enleveSucre();
+  p.poseNid();
+  CHECK(p.contientNid());
+  p.poseFourmi(Fourmi(c, 0));
+  // CHECK_THROWS_AS(p.poseFourmi(Fourmi(c, 0)), std::runtime_error);
+  CHECK_FALSE(p.contientFourmi());
+  p.enleveSucre();
+  CHECK_FALSE(p.contientFourmi());
+  p.posePheroNid(2);
+  CHECK(p.getPheroNid() == 1);
+  p.posePheroSucre(300);
+  CHECK(p.getPheroSucre() == 255);
+  p.diminuerPheroSucre();
+  CHECK(p.getPheroSucre() == 250);
+}

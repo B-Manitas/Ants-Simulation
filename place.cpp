@@ -4,16 +4,34 @@
 #include "doctest.h"
 #include <sstream>
 
-void Place::poseSucre()
+bool Place::poseSucre()
 {
   if (not contientFourmi())
-    m_contientSucre = true;
+  {
+    m_morceauSucre++;
+    posePheroSucre(255);
+    return true;
+  }
+
+  return false;
 };
 
-void Place::poseNid()
+void Place::enleveSucre()
+{
+  if (contientSucre())
+    m_morceauSucre--;
+};
+
+bool Place::poseNid()
 {
   if (not contientFourmi())
-    m_pheroNid = 1;
+  {
+    m_morceauNid++;
+    posePheroNid(1);
+    return true;
+  }
+
+  return false;
 };
 
 void Place::posePheroSucre(double quantite)
@@ -32,17 +50,27 @@ void Place::posePheroNid(double quantite)
   m_pheroNid = std::min(m_pheroNid, 1.);
 };
 
-void Place::poseFourmi(Fourmi fourmi)
+bool Place::poseFourmi(Fourmi fourmi)
 {
-  if (not contientFourmi() && (not contientSucre() || fourmi.chercheSucre()) && not contientNid())
+  if (not contientFourmi() && (not contientSucre() || (contientSucre() && not fourmi.chercheSucre())) && not contientNid())
   {
     m_numeroFourmi = fourmi.getNum();
+    return true;
   }
-};
 
-void Place::enleveFourmi()
-{
-  m_numeroFourmi = -1;
+  return false;
+  // else
+  // {
+  //   std::ostringstream error_msg;
+  //   error_msg << "Une fourmi n'a pas pû être poser." << std::endl
+  //             << "Condition 1: " << not contientFourmi() << std::endl
+  //             << "Condition 2: " << (not contientSucre() || fourmi.chercheSucre()) << std::endl
+  //             << "Condition 3: " << not contientNid() << std::endl
+  //             << "La fourmi: " << fourmi << std::endl
+  //             << "La place: " << *this << std::endl;
+
+  //   throw std::runtime_error(error_msg.str());
+  // }
 };
 
 void Place::diminuerPheroSucre()
@@ -57,7 +85,8 @@ bool Place::operator==(const Place &p) const
           m_pheroSucre == p.getPheroSucre() and
           m_pheroNid == p.getPheroNid() and
           m_numeroFourmi == p.getNumeroFourmi() and
-          m_contientSucre == p.contientSucre());
+          contientSucre() == p.contientSucre() and
+          contientNid() == p.contientNid());
 }
 
 std::ostream &operator<<(std::ostream &out, const Place &place)
@@ -66,15 +95,20 @@ std::ostream &operator<<(std::ostream &out, const Place &place)
       << "Coord: " << place.getCoord() << ", "
       << "Num Fourmi: " << place.getNumeroFourmi() << ", "
       << "Phero Nid: " << place.getPheroNid() << ", "
-      << "Phero Sucre: " << place.getPheroSucre() << " }";
+      << "Phero Sucre: " << place.getPheroSucre() << ", "
+      << "Nid: " << (place.contientNid() ? "Oui" : "Non") << ", "
+      << "Sucre: " << (place.contientSucre() ? "Oui" : "Non") << " }";
+
   return out;
 }
 
 void deplaceFourmi(Fourmi &fourmi, Place &p1, Place &p2)
 {
-  p1.enleveFourmi();
-  fourmi.deplace(p2.getCoord());
-  p2.poseFourmi(fourmi);
+  if (p2.poseFourmi(fourmi))
+  {
+    fourmi.deplace(p2.getCoord());
+    p1.enleveFourmi();
+  }
 }
 
 bool estPlusProcheNid(Place p1, Place p2)
@@ -84,33 +118,89 @@ bool estPlusProcheNid(Place p1, Place p2)
 
 TEST_SUITE_BEGIN("Test de la classe Place.");
 
-TEST_CASE("Test des méthodes de la classe Place.")
+TEST_CASE("Test de la fonction poseSucre.")
 {
-  Coord c = Coord(0, 0);
-  Place p = Place(Coord(0, 0));
-  CHECK_FALSE(p.contientSucre());
-  CHECK_FALSE(p.contientNid());
-  CHECK_FALSE(p.contientFourmi());
-  CHECK_FALSE(p.estSurUnePiste());
-  CHECK(p.estVide());
-  p.poseFourmi(Fourmi(c, 0));
-  CHECK(p.contientFourmi());
-  CHECK(p.getNumeroFourmi() == 0);
-  p.enleveFourmi();
+  Place p;
   p.poseSucre();
   CHECK(p.contientSucre());
-  p.enleveSucre();
-  CHECK(p.getPheroSucre() == 0);
-  p.poseNid();
-  CHECK(p.getPheroNid() == 1);
-  p.poseFourmi(Fourmi(c, 0));
-  CHECK_FALSE(p.contientFourmi());
-  p.enleveSucre();
-  CHECK_FALSE(p.contientFourmi());
-  p.posePheroNid(2);
-  CHECK(p.getPheroNid() == 1);
-  p.posePheroSucre(300);
   CHECK(p.getPheroSucre() == 255);
+
+  Place p2 = Place(Coord(0, 0));
+  p2.poseFourmi(Fourmi(Coord(0, 0), 0));
+  CHECK_FALSE(p2.poseSucre());
+}
+
+TEST_CASE("Test de la fonction enleveSucre")
+{
+  Place p;
+  p.poseSucre();
+  p.enleveSucre();
+  CHECK_FALSE(p.contientSucre());
+  CHECK(p.getPheroSucre() == 255);
+}
+
+TEST_CASE("Test de la fonction poseNid")
+{
+  Place p;
+  p.poseNid();
+  CHECK(p.contientNid());
+  CHECK(p.getPheroNid() == 1);
+  CHECK_FALSE(p.poseFourmi(Fourmi()));
+}
+
+TEST_CASE("Test de la fonction poseFourmi")
+{
+  // Testes de poser plusieurs fourmis sur une même place.
+  Place p;
+  p.poseFourmi(Fourmi(Coord(), 0));
+  CHECK(p.contientFourmi());
+  CHECK_FALSE(p.poseFourmi(Fourmi(Coord(), 1)));
+
+  // Testes de poser un nid et une fourmis sur une même place.
+  Place p1;
+  p1.poseNid();
+  CHECK_FALSE(p1.poseFourmi(Fourmi(Coord(), 0)));
+
+  // Testes de poser un sucre et une fourmis sur une même case.
+  Place p2;
+  p2.poseSucre();
+  CHECK_FALSE(p2.poseFourmi(Fourmi(Coord(), 0)));
+
+  // Testes de poser un sucre et une fourmis qui porte un sucre.
+  Place p3 = Place(Coord());
+  p3.poseSucre();
+  Fourmi f = Fourmi(Coord(), 0);
+  f.porteSucre();
+  CHECK(p3.poseFourmi(f));
+  CHECK(p3.contientFourmi());
+}
+
+TEST_CASE("Test de la fonction enleveFourmi")
+{
+  Place p;
+  p.poseFourmi(Fourmi(Coord(), 0));
+  p.enleveFourmi();
+  CHECK_FALSE(p.contientFourmi());
+}
+
+TEST_CASE("Test de la fonction posePheroNid")
+{
+  Place p;
+  p.posePheroNid(.5);
+  CHECK(p.getPheroNid() == .5);
+}
+
+TEST_CASE("Test de la fonction posePheroSucre")
+{
+  Place p;
+  p.posePheroSucre(100);
+  CHECK(p.getPheroSucre() == 100);
+}
+
+TEST_CASE("Test de la fonction diminuePheroSucre")
+{
+  Place p;
+  p.posePheroSucre(255);
   p.diminuerPheroSucre();
   CHECK(p.getPheroSucre() == 250);
 }
@@ -136,7 +226,9 @@ TEST_CASE("Test de l'operateur <<.")
   streamCheck << "{ Coord: (2, 3), "
               << "Num Fourmi: -1, "
               << "Phero Nid: 0, "
-              << "Phero Sucre: 0 }";
+              << "Phero Sucre: 0, "
+              << "Nid: Non, "
+              << "Sucre: Non }";
 
   CHECK(stream.str() == streamCheck.str());
 }

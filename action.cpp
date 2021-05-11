@@ -30,6 +30,7 @@ bool Action::condtion_n(int n, Fourmi f, Place p1, Place p2) const
 void Action::action2(Fourmi &f, Place &p1)
 {
   f.porteSucre();
+  p1.enleveSucre();
   p1.posePheroSucre();
 }
 
@@ -55,19 +56,15 @@ void Action::action_n(int n, Fourmi &f, Place &p1, Place &p2)
   {
   case 2:
     action2(f, p1);
-    break;
 
   case 3:
     action3(f);
-    break;
 
   case 4:
     action4(f, p1, p2);
-    break;
 
   case 7:
     action7(f, p1, p2);
-    break;
 
   default:
     break;

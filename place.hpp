@@ -9,14 +9,20 @@ class Place
 {
 private:
   Coord m_coord;
+  int m_numeroFourmi;
   int m_pheroSucre;
   double m_pheroNid;
-  int m_numeroFourmi;
-  bool m_contientSucre;
+  int m_morceauSucre;
+  int m_morceauNid;
 
 public:
   // Constructor
-  Place(Coord coord) : m_coord{coord}, m_pheroSucre{0}, m_pheroNid{0}, m_numeroFourmi{-1}, m_contientSucre{false} {};
+  Place() : m_coord{Coord()}, m_numeroFourmi{-1},
+            m_pheroSucre{0}, m_pheroNid{0},
+            m_morceauSucre{0}, m_morceauNid{0} {};
+  Place(Coord coord) : m_coord{coord}, m_numeroFourmi{-1},
+                       m_pheroSucre{0}, m_pheroNid{0},
+                       m_morceauSucre{0}, m_morceauNid{0} {};
 
   // Les getters.
   Coord getCoord() const { return m_coord; };
@@ -25,17 +31,17 @@ public:
   int getNumeroFourmi() const { return m_numeroFourmi; };
 
   // Les méthodes générales.
-  bool contientSucre() const { return m_contientSucre; };
-  bool contientNid() const { return m_pheroNid == 1; };
+  bool contientSucre() const { return m_morceauSucre > 0; };
+  bool contientNid() const { return m_morceauNid > 0; };
   bool contientFourmi() const { return m_numeroFourmi != -1; };
   bool contientPheroSucre() const { return m_pheroSucre > 0; }
   bool estVide() const { return not(contientSucre() && contientNid() && contientFourmi()); }
   bool estSurUnePiste() const { return m_pheroNid > 0 && not contientNid(); };
-  void poseSucre();
-  void enleveSucre() { m_contientSucre = false; };
-  void poseNid();
-  void poseFourmi(Fourmi fourmi);
-  void enleveFourmi();
+  bool poseSucre();
+  bool poseNid();
+  void enleveSucre();
+  bool poseFourmi(Fourmi fourmi);
+  void enleveFourmi() { m_numeroFourmi = -1; };
   void posePheroNid(double quantite);
   void posePheroSucre(double quantite = 255);
   void diminuerPheroSucre();

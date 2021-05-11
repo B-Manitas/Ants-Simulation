@@ -24,8 +24,12 @@ struct Grille
   Place randPlace();
 };
 
-void mettreAJourUneFourmi(Coord c, Grille &laGrille, GrilleFourmis &lesFourmis);
-// void mettreAJourUneFourmi(Fourmi &fourmi, Grille &laGrille);
+void placeNids(Grille &g, EnsCoord lesNids);
+void placeSucres(Grille &g, EnsCoord lesSucres);
+GrilleFourmis placeFourmis(Grille &g, std::vector<Fourmi> lesFourmis);
+GrilleFourmis initialiseGrille(Grille &g, EnsCoord lesNids, EnsCoord lesSucres, EnsCoord lesFourmis);
+
+void mettreAJourUneFourmi(Fourmi f, Grille &laGrille, GrilleFourmis &lesFourmis);
 void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis);
 
 #endif

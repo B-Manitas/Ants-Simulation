@@ -22,40 +22,18 @@ std::string repeat_string(std::string str, int n)
   return new_str;
 }
 
-void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmis)
+GrilleFourmis initialiserEmplacements(Grille &laGrille)
 {
-  EnsCoord centre = EnsCoord();
-  int idF = 0;
-  for (int y = TAILLEGRILLE / 2 - 2; y < TAILLEGRILLE / 2 + 2; y++)
-    for (int x = TAILLEGRILLE / 2 - 2; x < TAILLEGRILLE / 2 + 2; x++)
-    {
-      Coord c = Coord(x, y);
-      centre.ajoute(c);
-      if (x >= TAILLEGRILLE / 2 - 1 && x < TAILLEGRILLE / 2 + 1 && y >= TAILLEGRILLE / 2 - 1 && y < TAILLEGRILLE / 2 + 1)
-      {
-        Place pNid = Place(c);
-        pNid.poseNid();
-        laGrille.rangePlace(pNid);
-      }
-      else
-      {
-        Place pF = Place(c);
-        Fourmi f = Fourmi(c, idF);
-        pF.poseFourmi(f);
-        laGrille.rangePlace(pF);
-        lesFourmis.rangeFourmi(f);
-        idF++;
-      }
-    }
+  EnsCoord lesSucres = EnsCoord(std::vector<Coord>({Coord(15, 7), Coord(13, 15)}));
+  EnsCoord lesNids = EnsCoord(std::vector<Coord>({Coord(9, 9), Coord(9, 10), Coord(10, 9), Coord(10, 10)}));
+  EnsCoord lesFourmis = EnsCoord(std::vector<Coord>({Coord(8, 8), Coord(9, 8), Coord(10, 8), Coord(11, 8),
+                                                     Coord(8, 9), Coord(11, 9), Coord(8, 10), Coord(11, 10),
+                                                     Coord(8, 11), Coord(9, 11)}));
 
-  Place pSucre = laGrille.randPlace();
+  GrilleFourmis gFourmis = initialiseGrille(laGrille, lesNids, lesSucres, lesFourmis);
+  testCoherence(laGrille, gFourmis, "Initialisation");
 
-  while (centre.contient(pSucre.getCoord()))
-    pSucre = laGrille.randPlace();
-
-  pSucre.poseSucre();
-  laGrille.rangePlace(pSucre);
-  testCoherence(laGrille, lesFourmis, "Initialisation");
+  return gFourmis;
 }
 
 void dessineGrille(Grille &g, GrilleFourmis &lesFourmis, int n)
@@ -87,10 +65,10 @@ void dessineGrille(Grille &g, GrilleFourmis &lesFourmis, int n)
         f = lesFourmis.chargeFourmi(c);
 
       if (p.contientFourmi() && f.chercheSucre())
-        file << " f ";
+        file << " f" << f.getNum();
 
       else if (p.contientFourmi())
-        file << " F ";
+        file << " F" << f.getNum();
 
       else if (p.contientNid())
         file << " n ";
@@ -128,13 +106,75 @@ void dessine2DVecteur(std::vector<std::vector<Fourmi>> &t)
   }
 }
 
-void dessineVecteur(std::vector<Fourmi> &v)
+void dessinePPM(Grille &laGrille, GrilleFourmis &lesFourmis, int n)
 {
-  std::cout << "{ ";
-  for (auto &f : v)
-    std::cout << f << " | ";
+  int r, g, b;
 
-  std::cout << " }";
+  std::ostringstream filename;
+  filename << "ppm/img" << std::setfill('0') << std::setw(3) << n << ".ppm";
+  std::ofstream fichier(filename.str(), std::ios::out | std::ios::trunc);
+
+  if (not fichier.is_open())
+    throw std::runtime_error("Le fichier n'a pas pu être ouvert.");
+
+  // ecriture de l’entete
+  fichier << "P3" << std::endl
+          << TAILLEGRILLE << " " << TAILLEGRILLE << " " << std::endl
+          << 255 << " " << std::endl;
+
+  for (int y = 0; y < laGrille.taille(); y++)
+  {
+    for (int x = 0; x < laGrille.taille(); x++)
+    {
+      Coord c = Coord(x, y);
+      Place p = laGrille.chargePlace(c);
+      Fourmi f = Fourmi();
+
+      if (lesFourmis.contientFourmisCoord(c))
+        f = lesFourmis.chargeFourmi(c);
+
+      if (p.contientFourmi() && f.chercheSucre())
+        g = 255;
+
+      else if (p.contientNid())
+        b = 255;
+
+      else if (p.contientSucre())
+      {
+        r = 255;
+        g = 255;
+        b = 255;
+      }
+
+      else if (p.getPheroSucre() > 0)
+        g = p.getPheroSucre();
+
+      else
+      {
+        r = 0;
+        g = 0;
+        b = 0;
+      }
+
+      fichier << r << " " << g << " " << b << "    ";
+    }
+
+    fichier << std::endl;
+  }
+
+  fichier.close();
+}
+
+void dessinePheroNid(Grille &g)
+{
+  for (int y = 0; y < g.taille(); y++)
+  {
+    std::cout << " | ";
+    for (int x = 0; x < g.taille(); x++)
+      std::cout << g.m_grille[y][x].getPheroNid() << " | ";
+
+    std::cout << std::endl;
+  }
 }
 
 void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string title)
@@ -182,26 +222,21 @@ int main(int argc, const char **argv)
     return test_result;
 
   Grille laGrille = Grille(TAILLEGRILLE);
-  GrilleFourmis lesFourmis = GrilleFourmis();
+  GrilleFourmis lesFourmis = initialiserEmplacements(laGrille);
   GrilleFourmis lesFourmis2 = lesFourmis;
-
-  initialiserEmplacements(laGrille, lesFourmis);
-  // std::cout << "Les Fourmis: " << lesFourmis << std::endl;
-  int n_iteration = 2;
+  int n_iteration = 20;
 
   for (int i = 0; i < n_iteration; i++)
   {
     dessineGrille(laGrille, lesFourmis, i);
-    // dessineVecteur(lesFourmis.m_grilleF);
-
-    std::cout << "\nSimu: " << i << std::endl;
+    dessinePPM(laGrille, lesFourmis, i);
     mettreAJourEnsFourmis(laGrille, lesFourmis);
     testCoherence(laGrille, lesFourmis, "Simulation " + std::to_string(i));
-    std::cout << "\nFin" << std::endl;
-
-    // if (lesFourmis.m_grilleF == lesFourmis2.m_grilleF)
-    //   std::cout << "equal" << std::endl;
+    laGrille.diminuePheroSucre();
   }
+
+  if (lesFourmis.m_grilleF == lesFourmis2.m_grilleF)
+    std::cout << "equal" << std::endl;
 
   return 0;
 }

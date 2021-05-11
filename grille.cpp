@@ -6,6 +6,7 @@
 #include "grilleFourmis.hpp"
 #include "doctest.h"
 #include <vector>
+#include <iostream>
 
 Grille::Grille(int const taille)
 {
@@ -60,19 +61,19 @@ void Grille::linearisePheroNid()
   {
     stable = true;
     for (int y = 0; y < taille(); y++)
-    {
       for (int x = 0; x < taille(); x++)
       {
         Coord c = Coord(x, y);
         Place p = chargePlace(c);
+
         if (p.getPheroNid() < 1)
         {
           EnsCoord coordVoisins = voisines(c);
           double maxPhero = 0;
 
-          for (int pos = 0; y < coordVoisins.taille(); pos++)
+          for (int posVois = 0; posVois < coordVoisins.taille(); posVois++)
           {
-            Place v = chargePlace(coordVoisins.ieme(pos));
+            Place v = chargePlace(coordVoisins.ieme(posVois));
             maxPhero = std::max(maxPhero, v.getPheroNid());
           }
 
@@ -80,13 +81,12 @@ void Grille::linearisePheroNid()
 
           if (maxPhero > p.getPheroNid())
           {
-            p.posePheroSucre(maxPhero);
+            p.posePheroNid(maxPhero);
             rangePlace(p);
             stable = false;
           }
         }
       }
-    }
   }
 }
 
@@ -107,51 +107,83 @@ Place Grille::randPlace()
   return chargePlace(Coord(std::rand() % taille(), std::rand() % taille()));
 }
 
-void mettreAJourUneFourmi(Coord c, Grille &laGrille, GrilleFourmis &lesFourmis)
+void placeNids(Grille &g, EnsCoord ens)
 {
-  Place pf = laGrille.chargePlace(c);
+  for (int i = 0; i < ens.taille(); i++)
+  {
+    Place p = g.chargePlace(ens.ieme(i));
+    p.poseNid();
+    g.rangePlace(p);
+  }
+}
+
+void placeSucres(Grille &g, EnsCoord ens)
+{
+  for (int i = 0; i < ens.taille(); i++)
+  {
+    Place p = g.chargePlace(ens.ieme(i));
+    p.poseSucre();
+    g.rangePlace(p);
+  }
+}
+
+GrilleFourmis placeFourmis(Grille &g, EnsCoord ens)
+{
+  GrilleFourmis lesFourmis;
+  for (int i = 0; i < ens.taille(); i++)
+  {
+    Coord c = ens.ieme(i);
+    Place p = g.chargePlace(c);
+    Fourmi f = Fourmi(c, i);
+    lesFourmis.rangeFourmi(f);
+    p.poseFourmi(f);
+    g.rangePlace(p);
+  }
+
+  return lesFourmis;
+}
+
+GrilleFourmis initialiseGrille(Grille &g, EnsCoord lesNids, EnsCoord lesSucres, EnsCoord lesFourmis)
+{
+  placeNids(g, lesNids);
+  placeSucres(g, lesSucres);
+  GrilleFourmis gFourmis = placeFourmis(g, lesFourmis);
+
+  return gFourmis;
+}
+
+void mettreAJourUneFourmi(Fourmi f, Grille &laGrille, GrilleFourmis &lesFourmis)
+{
+  Coord c = f.getCoord();
+  Place p1 = laGrille.chargePlace(c);
   EnsCoord voisCoord = voisines(c);
 
   std::vector<int> action_i = std::vector<int>{2, 3, 4, 7};
-  for (size_t numRegle = 0; numRegle < action_i.size(); numRegle++)
-    for (int i = 0; i < voisCoord.taille(); i++)
+  for (auto &numR : action_i)
+  {
+    Coord cv = voisCoord.ieme(rand() % voisCoord.taille());
+    voisCoord.supprime(cv);
+    Place p2 = laGrille.chargePlace(cv);
+
+    if (Action().condtion_n(numR, f, p1, p2))
     {
-      if (lesFourmis.contientFourmisCoord(c))
-      {
-        Place vois = laGrille.chargePlace(voisCoord.ieme(i));
-        Fourmi fourmi = lesFourmis.chargeFourmi(c);
-        // std::cout << fourmi << std::endl;
-        // std::cout << numRegle << std::endl;
-        // std::cout << action_i[numRegle] << std::endl;
-        if (Action().condtion_n(action_i[numRegle], fourmi, pf, vois))
-        {
-          Action().action_n(action_i[numRegle], fourmi, pf, vois);
-          laGrille.rangePlace(pf);
-          laGrille.rangePlace(vois);
-          lesFourmis.rangeFourmi(fourmi);
-          return;
-        }
-      }
-      else
-        return;
+      // std::cout << numR << " ";
+      Action().action_n(numR, f, p1, p2);
+      laGrille.rangePlace(p1);
+      laGrille.rangePlace(p2);
+      lesFourmis.rangeFourmi(f);
+      return;
     }
+    // for (int i = 0; i < voisCoord.taille(); i++)
+    // {
+    // }
+  }
 }
 
 void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis)
 {
-  for (int y = 0; y < lesFourmis.taille(); y++)
-    for (int x = 0; x < lesFourmis.taille(); x++)
-    {
-      mettreAJourUneFourmi(Coord(x, y), laGrille, lesFourmis);
-
-      // Fourmi f = lesFourmis.chargeFourmi(Coord(x, y));
-      // Fourmi f2 = f;
-      // mettreAJourUneFourmi(lesFourmis.chargeFourmi(Coord(x, y)), laGrille);
-      // if (not(f == f2))
-      //   std::cout << f << " et " << f2 << std::endl;
-
-      // lesFourmis.rangeFourmi(f);
-    }
+  for (auto &f : lesFourmis.m_grilleF)
+    mettreAJourUneFourmi(f, laGrille, lesFourmis);
 }
 
 TEST_SUITE_BEGIN("Test de la classe Grille.");

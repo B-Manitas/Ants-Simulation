@@ -149,11 +149,12 @@ int EnsCoord::taille() const
 
 Coord EnsCoord::ieme(const int &n) const
 {
+
   if (n >= 0 and n < taille())
     return m_coords[n];
 
   else
-    throw std::invalid_argument("Le paramètre n est en dehors des bornes de l'ensemble.");
+    throw std::invalid_argument("Erreur EnsCoord: Le paramètre n est en dehors des bornes de l'ensemble.");
 }
 
 EnsCoord voisines(Coord const &c)
