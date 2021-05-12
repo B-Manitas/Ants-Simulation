@@ -127,9 +127,8 @@ void placeSucres(Grille &g, EnsCoord ens)
   }
 }
 
-GrilleFourmis placeFourmis(Grille &g, EnsCoord ens)
+void placeFourmis(Grille &g, GrilleFourmis &lesFourmis, EnsCoord ens)
 {
-  GrilleFourmis lesFourmis;
   for (int i = 0; i < ens.taille(); i++)
   {
     Coord c = ens.ieme(i);
@@ -139,17 +138,24 @@ GrilleFourmis placeFourmis(Grille &g, EnsCoord ens)
     p.poseFourmi(f);
     g.rangePlace(p);
   }
-
-  return lesFourmis;
 }
 
-GrilleFourmis initialiseGrille(Grille &g, EnsCoord lesNids, EnsCoord lesSucres, EnsCoord lesFourmis)
+void initialiseGrille(Grille &g, GrilleFourmis &lesFourmisGrille, EnsCoord lesNids, EnsCoord lesSucres, EnsCoord lesFourmis)
 {
   placeNids(g, lesNids);
   placeSucres(g, lesSucres);
-  GrilleFourmis gFourmis = placeFourmis(g, lesFourmis);
+  placeFourmis(g, lesFourmisGrille, lesFourmis);
+}
 
-  return gFourmis;
+void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmisGrille)
+{
+  EnsCoord lesSucres = EnsCoord(std::vector<Coord>({Coord(15, 7), Coord(13, 15)}));
+  EnsCoord lesNids = EnsCoord(std::vector<Coord>({Coord(9, 9), Coord(9, 10), Coord(10, 9), Coord(10, 10)}));
+  EnsCoord lesFourmis = EnsCoord(std::vector<Coord>({Coord(8, 8), Coord(9, 8), Coord(10, 8), Coord(11, 8),
+                                                     Coord(8, 9), Coord(11, 9), Coord(8, 10), Coord(11, 10),
+                                                     Coord(8, 11), Coord(9, 11)}));
+
+  initialiseGrille(laGrille, lesFourmisGrille, lesNids, lesSucres, lesFourmis);
 }
 
 void mettreAJourUneFourmi(Fourmi f, Grille &laGrille, GrilleFourmis &lesFourmis)

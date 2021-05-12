@@ -51,6 +51,5 @@ public:
 
 bool estPlusProcheNid(Place p1, Place p2);
 void deplaceFourmi(Fourmi &fourmi, Place &p1, Place &p2);
-void testCoherence(Place const place, Fourmi const f);
 
 #endif
