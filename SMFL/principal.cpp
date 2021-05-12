@@ -213,30 +213,30 @@ void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string titl
     }
 }
 
-int main(int argc, const char **argv)
-{
-  // srand(time(NULL));
-  doctest::Context context(argc, argv);
-  int test_result = context.run();
-  if (context.shouldExit())
-    return test_result;
+// int main(int argc, const char **argv)
+// {
+//   // srand(time(NULL));
+//   doctest::Context context(argc, argv);
+//   int test_result = context.run();
+//   if (context.shouldExit())
+//     return test_result;
 
-  Grille laGrille = Grille(TAILLEGRILLE);
-  GrilleFourmis lesFourmis = initialiserEmplacements(laGrille);
-  GrilleFourmis lesFourmis2 = lesFourmis;
-  int n_iteration = 20;
+//   Grille laGrille = Grille(TAILLEGRILLE);
+//   GrilleFourmis lesFourmis = initialiserEmplacements(laGrille);
+//   GrilleFourmis lesFourmis2 = lesFourmis;
+//   int n_iteration = 20;
 
-  for (int i = 0; i < n_iteration; i++)
-  {
-    dessineGrille(laGrille, lesFourmis, i);
-    dessinePPM(laGrille, lesFourmis, i);
-    mettreAJourEnsFourmis(laGrille, lesFourmis);
-    testCoherence(laGrille, lesFourmis, "Simulation " + std::to_string(i));
-    laGrille.diminuePheroSucre();
-  }
+//   for (int i = 0; i < n_iteration; i++)
+//   {
+//     dessineGrille(laGrille, lesFourmis, i);
+//     dessinePPM(laGrille, lesFourmis, i);
+//     mettreAJourEnsFourmis(laGrille, lesFourmis);
+//     testCoherence(laGrille, lesFourmis, "Simulation " + std::to_string(i));
+//     laGrille.diminuePheroSucre();
+//   }
 
-  if (lesFourmis.m_grilleF == lesFourmis2.m_grilleF)
-    std::cout << "equal" << std::endl;
+//   if (lesFourmis.m_grilleF == lesFourmis2.m_grilleF)
+//     std::cout << "equal" << std::endl;
 
-  return 0;
-}
+//   return 0;
+// }

@@ -4,6 +4,9 @@ else
 RM = rm -rf
 endif
 
+all: compile-sfml link-sfml
+	./main
+
 test.o: test.cpp coord.hpp fourmi.hpp place.hpp grille.hpp action.hpp
 	g++ -Wall -std=c++11 -c test.cpp
 
@@ -23,3 +26,18 @@ principal: principal.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.
 run-principal: principal
 	-$(RM) *.o
 	./principal
+
+main.o: coord.hpp fourmi.hpp place.hpp grille.hpp grilleFourmis.hpp action.hpp
+	g++ -Wall -std=c++11 -c main.cpp
+
+main: main.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
+	g++ -Wall -std=c++11 -o  main coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
+
+compile-sfml: main
+	g++ -Isrc/include -c main.cpp
+
+link-sfml:
+	g++ main.o -o main -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
+
+clean:
+	-$(RM) *.o
