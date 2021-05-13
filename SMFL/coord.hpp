@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-const int TAILLEGRILLE = 70;
+const int TAILLEGRILLE = 50;
 
 class Coord
 {

@@ -16,7 +16,7 @@ bool condtion_n(int n, Fourmi f, Place p1, Place p2)
     return condition1(f, p1);
 
   else if (n == 2)
-    return condition2(f, p1);
+    return condition2(f, p2);
 
   else if (n == 3)
     return condition3(f, p1);
@@ -39,6 +39,7 @@ bool condtion_n(int n, Fourmi f, Place p1, Place p2)
 
 void action2(Fourmi &f, Place &p1)
 {
+  // std::cout << "action 2" << std::endl;
   f.porteSucre();
   p1.enleveSucre();
   p1.posePheroSucre();

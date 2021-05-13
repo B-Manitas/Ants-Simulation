@@ -25,6 +25,7 @@ enum class state_boxes
   fourmi_sucre,
   nid,
   sucre,
+  pheroSucre,
   vide
 };
 
@@ -77,17 +78,20 @@ std::vector<std::vector<int>> getValueGrille(Grille &laGrille, GrilleFourmis &le
       if (lesFourmis.contientFourmisCoord(c))
         f = lesFourmis.chargeFourmi(c);
 
-      if (p.contientFourmi() && f.chercheSucre())
-        grid[y].push_back(int(state_boxes::fourmi));
-
-      else if (p.contientFourmi())
-        grid[y].push_back(int(state_boxes::fourmi_sucre));
-
-      else if (p.contientNid())
+      if (p.contientNid())
         grid[y].push_back(int(state_boxes::nid));
 
       else if (p.contientSucre())
         grid[y].push_back(int(state_boxes::sucre));
+
+      else if (p.contientFourmi() && not f.chercheSucre())
+        grid[y].push_back(int(state_boxes::fourmi_sucre));
+
+      else if (p.contientFourmi() && f.chercheSucre())
+        grid[y].push_back(int(state_boxes::fourmi));
+
+      else if (p.contientPheroSucre())
+        grid[y].push_back(int(state_boxes::pheroSucre));
 
       else
         grid[y].push_back(int(state_boxes::vide));
@@ -98,6 +102,7 @@ std::vector<std::vector<int>> getValueGrille(Grille &laGrille, GrilleFourmis &le
 
 int main(int argc, const char **argv)
 {
+  srand((unsigned)time(NULL));
   // Infrastructure docstest.
   doctest::Context context(argc, argv);
   int test_result = context.run();
@@ -147,13 +152,16 @@ int main(int argc, const char **argv)
           color_rect = sf::Color::Yellow;
 
         else if (grid_state[y][x] == 1)
-          color_rect = sf::Color(std::max(place.getPheroSucre(), 250.), std::max(place.getPheroSucre(), 250.), 0);
+          color_rect = sf::Color::Yellow;
 
         else if (grid_state[y][x] == 2)
           color_rect = sf::Color(155, 155, 155);
 
         else if (grid_state[y][x] == 3)
           color_rect = sf::Color::White;
+
+        else if (grid_state[y][x] == 4)
+          color_rect = sf::Color(place.getPheroSucre(), place.getPheroSucre(), 0);
 
         else
           color_rect = sf::Color::Black;

@@ -149,9 +149,9 @@ void initialiseGrille(Grille &g, GrilleFourmis &lesFourmisGrille, EnsCoord lesNi
 
 void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmisGrille)
 {
-  int n_sucre = 2;
+  int n_sucre = 10;
   int n_nid = 1;
-  int n_fourmi = 10;
+  int n_fourmi = 20;
 
   EnsCoord ens;
   EnsCoord ens_nid;
@@ -190,6 +190,7 @@ void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmisGrille)
   }
 
   initialiseGrille(laGrille, lesFourmisGrille, ens_nid, ens_sucres, ens_fourmi);
+  laGrille.linearisePheroNid();
 }
 
 void mettreAJourUneFourmi(Fourmi &f, Grille &laGrille)
@@ -200,20 +201,29 @@ void mettreAJourUneFourmi(Fourmi &f, Grille &laGrille)
   voisCoord.melange();
 
   for (int i = 0; i < voisCoord.taille(); i++)
+  {
+    Coord cv = voisCoord.ieme(i);
+    Place p2 = laGrille.chargePlace(cv);
+
+    // if (p2.contientSucre())
+    // {
+    //   // std::cout << p2 << std::endl;
+    //   std::cout << "condition 2 " << condtion_n(2, f, p1, p2) << std::endl;
+    // }
+
     for (int num_r = 2; num_r < 8; num_r++)
     {
-      Coord cv = voisCoord.ieme(i);
-      Place p2 = laGrille.chargePlace(cv);
-
       if (condtion_n(num_r, f, p1, p2))
       {
-        std::cout << num_r << " ";
+        // if (num_r != 7)
+        //   std::cout << num_r << " ";
         action_n(num_r, f, p1, p2);
         laGrille.rangePlace(p1);
         laGrille.rangePlace(p2);
         return;
       }
     }
+  }
 }
 
 void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis)

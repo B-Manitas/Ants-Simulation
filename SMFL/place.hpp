@@ -29,6 +29,8 @@ public:
   double getPheroSucre() const { return m_pheroSucre; };
   double getPheroNid() const { return m_pheroNid; };
   int getNumeroFourmi() const { return m_numeroFourmi; };
+  int getMorceauSucre() const { return m_morceauSucre; };
+  int getMorceauNid() const { return m_morceauNid; };
 
   // Les méthodes générales.
   bool contientSucre() const { return m_morceauSucre > 0; };
@@ -37,7 +39,7 @@ public:
   bool contientPheroSucre() const { return m_pheroSucre > 0; }
   bool estVide() const { return not(contientSucre() && contientNid() && contientFourmi()); }
   bool estSurUnePiste() const { return m_pheroSucre > 0; };
-  bool poseSucre();
+  bool poseSucre(int quantite = 5);
   bool poseNid();
   void enleveSucre();
   bool poseFourmi(Fourmi fourmi);

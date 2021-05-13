@@ -4,11 +4,11 @@
 #include "doctest.h"
 #include <sstream>
 
-bool Place::poseSucre()
+bool Place::poseSucre(int quantite)
 {
   if (not contientFourmi())
   {
-    m_morceauSucre++;
+    m_morceauSucre += quantite;
     posePheroSucre(255);
     return true;
   }
@@ -18,8 +18,7 @@ bool Place::poseSucre()
 
 void Place::enleveSucre()
 {
-  if (contientSucre())
-    m_morceauSucre--;
+  m_morceauSucre = m_morceauSucre > 0 ? m_morceauSucre - 1 : 0;
 };
 
 bool Place::poseNid()
@@ -61,8 +60,7 @@ bool Place::poseFourmi(Fourmi fourmi)
 
 void Place::diminuerPheroSucre()
 {
-  if (m_pheroSucre > 0)
-    m_pheroSucre -= 5;
+  m_pheroSucre = m_pheroSucre > 0 ? m_pheroSucre - 5 : 0;
 };
 
 bool Place::operator==(const Place &p) const
@@ -119,8 +117,10 @@ TEST_CASE("Test de la fonction poseSucre.")
 TEST_CASE("Test de la fonction enleveSucre")
 {
   Place p;
-  p.poseSucre();
+  p.poseSucre(1);
+  std::cout << p.getMorceauSucre() << std::endl;
   p.enleveSucre();
+  std::cout << p.getMorceauSucre() << std::endl;
   CHECK_FALSE(p.contientSucre());
   CHECK(p.getPheroSucre() == 255);
 }
