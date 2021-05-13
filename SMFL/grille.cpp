@@ -205,18 +205,10 @@ void mettreAJourUneFourmi(Fourmi &f, Grille &laGrille)
     Coord cv = voisCoord.ieme(i);
     Place p2 = laGrille.chargePlace(cv);
 
-    // if (p2.contientSucre())
-    // {
-    //   // std::cout << p2 << std::endl;
-    //   std::cout << "condition 2 " << condtion_n(2, f, p1, p2) << std::endl;
-    // }
-
     for (int num_r = 2; num_r < 8; num_r++)
     {
       if (condtion_n(num_r, f, p1, p2))
       {
-        // if (num_r != 7)
-        //   std::cout << num_r << " ";
         action_n(num_r, f, p1, p2);
         laGrille.rangePlace(p1);
         laGrille.rangePlace(p2);

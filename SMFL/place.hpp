@@ -39,15 +39,17 @@ public:
   bool contientPheroSucre() const { return m_pheroSucre > 0; }
   bool estVide() const { return not(contientSucre() && contientNid() && contientFourmi()); }
   bool estSurUnePiste() const { return m_pheroSucre > 0; };
-  bool poseSucre(int quantite = 5);
   bool poseNid();
-  void enleveSucre();
+  bool poseSucre(int quantite = 5);
+  void enleveSucre(int quantite = 5) { m_morceauSucre = std::max(m_morceauSucre - quantite, 0); };
+  void enlevePheroSucre() { m_pheroSucre = 0; };
   bool poseFourmi(Fourmi fourmi);
   void enleveFourmi() { m_numeroFourmi = -1; };
   void posePheroNid(double quantite);
   void posePheroSucre(double quantite = 255);
-  void diminuerPheroSucre();
+  void diminuerPheroSucre() { m_pheroSucre = std::max(m_pheroSucre - 1, 0); };
   bool operator==(const Place &p) const;
+  bool operator!=(const Place &p) const;
   friend std::ostream &operator<<(std::ostream &out, const Place &place);
 };
 

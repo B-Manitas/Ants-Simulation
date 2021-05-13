@@ -136,8 +136,6 @@ void EnsCoord::ajoute(const Coord c)
 
 void EnsCoord::supprime(const Coord c)
 {
-  // std::cout << " | " << taille() << " " << position(c) << " | " << std::endl;
-
   if (contient(c))
     m_coords.erase(m_coords.begin() + position(c));
 

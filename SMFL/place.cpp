@@ -16,11 +16,6 @@ bool Place::poseSucre(int quantite)
   return false;
 };
 
-void Place::enleveSucre()
-{
-  m_morceauSucre = m_morceauSucre > 0 ? m_morceauSucre - 1 : 0;
-};
-
 bool Place::poseNid()
 {
   if (not contientFourmi())
@@ -58,11 +53,6 @@ bool Place::poseFourmi(Fourmi fourmi)
   return true;
 };
 
-void Place::diminuerPheroSucre()
-{
-  m_pheroSucre = m_pheroSucre > 0 ? m_pheroSucre - 5 : 0;
-};
-
 bool Place::operator==(const Place &p) const
 {
   return (m_coord == p.getCoord() and
@@ -71,6 +61,11 @@ bool Place::operator==(const Place &p) const
           m_numeroFourmi == p.getNumeroFourmi() and
           contientSucre() == p.contientSucre() and
           contientNid() == p.contientNid());
+}
+
+bool Place::operator!=(const Place &p) const
+{
+  return !(*this == p);
 }
 
 std::ostream &operator<<(std::ostream &out, const Place &place)
@@ -118,9 +113,7 @@ TEST_CASE("Test de la fonction enleveSucre")
 {
   Place p;
   p.poseSucre(1);
-  std::cout << p.getMorceauSucre() << std::endl;
   p.enleveSucre();
-  std::cout << p.getMorceauSucre() << std::endl;
   CHECK_FALSE(p.contientSucre());
   CHECK(p.getPheroSucre() == 255);
 }
@@ -183,15 +176,23 @@ TEST_CASE("Test de la fonction posePheroSucre")
   CHECK(p.getPheroSucre() == 100);
 }
 
+TEST_CASE("Test de la fonction enlevePheroSucre")
+{
+  Place p;
+  p.posePheroSucre(100);
+  p.enlevePheroSucre();
+  CHECK_FALSE(p.contientPheroSucre());
+}
+
 TEST_CASE("Test de la fonction diminuePheroSucre")
 {
   Place p;
   p.posePheroSucre(255);
   p.diminuerPheroSucre();
-  CHECK(p.getPheroSucre() == 250);
+  CHECK(p.getPheroSucre() == 254);
 }
 
-TEST_CASE("Test de l'operator==.")
+TEST_CASE("Test de l'operator== et !=.")
 {
   Place p = Place(Coord(0, 0));
   Place p2 = Place(Coord(1, 0));
@@ -199,8 +200,8 @@ TEST_CASE("Test de l'operator==.")
   p3.poseSucre();
 
   CHECK(p == p);
-  CHECK_FALSE(p == p2);
-  CHECK_FALSE(p2 == p3);
+  CHECK(p != p2);
+  CHECK(p2 != p3);
 }
 
 TEST_CASE("Test de l'operateur <<.")

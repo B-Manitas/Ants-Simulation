@@ -13,12 +13,6 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
-#define WHITE sf::Color::White
-#define BLACK sf::Color::Black
-#define GREEN sf::Color::Green
-#define GREEN_LIGHT sf::Color(0, 155, 0)
-#define GRAY sf::Color(153, 153, 153)
-
 enum class state_boxes
 {
   fourmi,
@@ -111,7 +105,10 @@ int main(int argc, const char **argv)
 
   // Déclaration des variables.
   const int TAILLE_CASE = 10;
-  int temps_pause = 100;
+  const int INTERVAL_TIME = 5;
+  int n_iteration = 0;
+  int time = 100;
+  bool isPlaying = false;
 
   // Création des Grilles.
   Grille laGrille(TAILLEGRILLE);
@@ -121,11 +118,33 @@ int main(int argc, const char **argv)
   std::vector<std::vector<int>> grid_state = getValueGrille(laGrille, lesFourmis);
 
   // Gestion de l'interface grphique.
-  sf::RenderWindow window(sf::VideoMode(TAILLEGRILLE * TAILLE_CASE, TAILLEGRILLE * TAILLE_CASE),
+  sf::RenderWindow window(sf::VideoMode(TAILLEGRILLE * TAILLE_CASE, TAILLEGRILLE * TAILLE_CASE + 60),
                           "Ants Simulators by Manitas Bahri",
                           sf::Style::Close | sf::Style::Titlebar);
 
-  sf::Color color_rect(sf::Color::Black);
+  // Gestion de l'affichage des textes.
+  sf::Font font;
+  if (!font.loadFromFile("asset/arial.ttf"))
+  {
+    std::cout << "Failed to load the font." << std::endl;
+  }
+
+  sf::Text txt_pause("Press 'Space' to play/pause.", font);
+  txt_pause.setCharacterSize(15);
+  txt_pause.setPosition(10, TAILLE_CASE * TAILLEGRILLE + 10);
+  txt_pause.setFillColor(sf::Color::White);
+
+  sf::Text txt_mouse("Use left/right mouse click to add and remove a sugar.", font);
+  txt_mouse.setCharacterSize(15);
+  txt_mouse.setPosition(10, TAILLE_CASE * TAILLEGRILLE + 25);
+  txt_mouse.setFillColor(sf::Color::White);
+
+  sf::Text txt_arrow("Use left/right arrow keys to change the speed time.", font);
+  txt_arrow.setCharacterSize(15);
+  txt_arrow.setPosition(10, TAILLE_CASE * TAILLEGRILLE + 40);
+  txt_arrow.setFillColor(sf::Color::White);
+
+  sf::Color color_rect(sf::Color::White);
 
   while (window.isOpen())
   {
@@ -133,8 +152,66 @@ int main(int argc, const char **argv)
 
     while (window.pollEvent(w_event))
     {
-      if (w_event.type == sf::Event::Closed)
+      switch (w_event.type)
+      {
+      case sf::Event::Closed:
         window.close();
+        break;
+
+      case sf::Event::KeyPressed:
+        switch (w_event.key.code)
+        {
+        case sf::Keyboard::Space:
+          isPlaying = !isPlaying;
+          break;
+
+        case sf::Keyboard::Left:
+          time = std::max(time - INTERVAL_TIME, 0);
+          break;
+
+        case sf::Keyboard::Right:
+          time = std::min(time + INTERVAL_TIME, 1000);
+          break;
+
+        default:
+          break;
+        }
+        break;
+
+      case sf::Event::MouseButtonPressed:
+        if (not isPlaying && w_event.mouseButton.button == sf::Mouse::Left)
+        {
+          int x = double(w_event.mouseButton.x) / TAILLE_CASE;
+          int y = double(w_event.mouseButton.y) / TAILLE_CASE;
+          if (y > 0 and x > 0 and y < TAILLEGRILLE and x < TAILLEGRILLE)
+          {
+            Place mouse_place = laGrille.chargePlace(Coord(x, y));
+            if (mouse_place.poseSucre())
+            {
+              grid_state[y][x] = int(state_boxes::sucre);
+              laGrille.rangePlace(mouse_place);
+            }
+          }
+        }
+
+        else if (not isPlaying && w_event.mouseButton.button == sf::Mouse::Right)
+        {
+          int x = double(w_event.mouseButton.x) / TAILLE_CASE;
+          int y = double(w_event.mouseButton.y) / TAILLE_CASE;
+          if (y > 0 and x > 0 and y < TAILLEGRILLE and x < TAILLEGRILLE)
+          {
+            Place mouse_place = laGrille.chargePlace(Coord(x, y));
+            mouse_place.enleveSucre();
+            mouse_place.enlevePheroSucre();
+            grid_state[y][x] = int(state_boxes::vide);
+            laGrille.rangePlace(mouse_place);
+          }
+        }
+        break;
+
+      default:
+        break;
+      }
     }
 
     window.clear();
@@ -170,14 +247,21 @@ int main(int argc, const char **argv)
         window.draw(rect);
       }
 
+    if (isPlaying)
+    {
+      mettreAJourEnsFourmis(laGrille, lesFourmis);
+      testCoherence(laGrille, lesFourmis, "Simulation " + std::to_string(n_iteration));
+      laGrille.diminuePheroSucre();
+      grid_state = getValueGrille(laGrille, lesFourmis);
+    }
+
+    window.draw(txt_pause);
+    window.draw(txt_mouse);
+    window.draw(txt_arrow);
     window.display();
 
-    mettreAJourEnsFourmis(laGrille, lesFourmis);
-    testCoherence(laGrille, lesFourmis, "Simulation ");
-    laGrille.diminuePheroSucre();
-    grid_state = getValueGrille(laGrille, lesFourmis);
-
-    sf::sleep(sf::milliseconds(temps_pause));
+    sf::sleep(sf::milliseconds(time));
+    n_iteration++;
   }
 
   return 0;

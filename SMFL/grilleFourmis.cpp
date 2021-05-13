@@ -47,8 +47,7 @@ Fourmi GrilleFourmis::chargeFourmi(Coord c)
     if (f.getCoord() == c)
       return f;
 
-  std::cout << c << std::endl;
-  throw std::runtime_error("Aucune fourmi n'a été trouvé. chargeF");
+  throw std::runtime_error("Aucune fourmi n'a été trouvé.");
 }
 
 void GrilleFourmis::rangeFourmi(Fourmi &fourmi)
@@ -66,8 +65,7 @@ Fourmi GrilleFourmis::chercheFourmi(int idFourmi)
     if (m_grilleF[i].getNum() == idFourmi)
       return m_grilleF[i];
 
-  std::cout << idFourmi << std::endl;
-  throw std::runtime_error("Aucune fourmis n'a été trouvé avec ce numéro. chercheF");
+  throw std::runtime_error("Aucune fourmis n'a été trouvé avec ce numéro.");
 }
 
 std::ostream &operator<<(std::ostream &out, GrilleFourmis &grille)

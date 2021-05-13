@@ -19,7 +19,7 @@ bool condtion_n(int n, Fourmi f, Place p1, Place p2)
     return condition2(f, p2);
 
   else if (n == 3)
-    return condition3(f, p1);
+    return condition3(f, p2);
 
   else if (n == 4)
     return condition4(f, p1, p2);
@@ -37,11 +37,10 @@ bool condtion_n(int n, Fourmi f, Place p1, Place p2)
     return false;
 }
 
-void action2(Fourmi &f, Place &p1)
+void action2(Fourmi &f, Place &p1, Place &p2)
 {
-  // std::cout << "action 2" << std::endl;
   f.porteSucre();
-  p1.enleveSucre();
+  p2.enleveSucre(1);
   p1.posePheroSucre();
 }
 
@@ -64,7 +63,7 @@ void action567(Fourmi &f, Place &p1, Place &p2)
 void action_n(int n, Fourmi &f, Place &p1, Place &p2)
 {
   if (n == 2)
-    action2(f, p1);
+    action2(f, p1, p2);
 
   else if (n == 3)
     action3(f);
@@ -82,9 +81,10 @@ TEST_CASE("Test de la méthode action2")
   Coord c = Coord(0, 0);
   Fourmi f = Fourmi(c, 0);
   Place p1 = Place(c);
+  Place p2 = Place(c);
 
-  p1.poseSucre();
-  action2(f, p1);
+  p2.poseSucre();
+  action2(f, p1, p2);
 
   CHECK_FALSE(f.chercheSucre());
   CHECK(p1.contientPheroSucre());
