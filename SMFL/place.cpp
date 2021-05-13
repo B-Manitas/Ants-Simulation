@@ -52,25 +52,11 @@ void Place::posePheroNid(double quantite)
 
 bool Place::poseFourmi(Fourmi fourmi)
 {
-  if (not contientFourmi() && (not contientSucre() || (contientSucre() && not fourmi.chercheSucre())) && not contientNid())
-  {
-    m_numeroFourmi = fourmi.getNum();
-    return true;
-  }
+  if (contientFourmi() or contientNid() or (contientSucre() && fourmi.chercheSucre()))
+    return false;
 
-  return false;
-  // else
-  // {
-  //   std::ostringstream error_msg;
-  //   error_msg << "Une fourmi n'a pas pû être poser." << std::endl
-  //             << "Condition 1: " << not contientFourmi() << std::endl
-  //             << "Condition 2: " << (not contientSucre() || fourmi.chercheSucre()) << std::endl
-  //             << "Condition 3: " << not contientNid() << std::endl
-  //             << "La fourmi: " << fourmi << std::endl
-  //             << "La place: " << *this << std::endl;
-
-  //   throw std::runtime_error(error_msg.str());
-  // }
+  m_numeroFourmi = fourmi.getNum();
+  return true;
 };
 
 void Place::diminuerPheroSucre()

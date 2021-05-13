@@ -30,7 +30,7 @@ void placeFourmis(Grille &g, GrilleFourmis &lesFourmis, EnsCoord ens);
 void initialiseGrille(Grille &g, GrilleFourmis &lesFourmisGrille, EnsCoord lesNids, EnsCoord lesSucres, EnsCoord lesFourmis);
 void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmisGrille);
 
-void mettreAJourUneFourmi(Fourmi f, Grille &laGrille, GrilleFourmis &lesFourmis);
+void mettreAJourUneFourmi(Fourmi &f, Grille &laGrille);
 void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis);
 
 #endif

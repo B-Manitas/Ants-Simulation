@@ -64,8 +64,7 @@ void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string titl
     }
 }
 
-std::vector<std::vector<int>>
-getValueGrille(Grille &laGrille, GrilleFourmis &lesFourmis)
+std::vector<std::vector<int>> getValueGrille(Grille &laGrille, GrilleFourmis &lesFourmis)
 {
   std::vector<std::vector<int>> grid(TAILLEGRILLE);
   for (int y = 0; y < laGrille.taille(); y++)
@@ -106,7 +105,7 @@ int main(int argc, const char **argv)
     return test_result;
 
   // Déclaration des variables.
-  const int TAILLE_CASE = 30;
+  const int TAILLE_CASE = 10;
   int temps_pause = 100;
 
   // Création des Grilles.
@@ -141,20 +140,20 @@ int main(int argc, const char **argv)
         sf::RectangleShape rect;
         rect.setPosition(x * TAILLE_CASE, y * TAILLE_CASE);
         rect.setSize(sf::Vector2f(TAILLE_CASE, TAILLE_CASE));
-        rect.setOutlineThickness(1);
-        rect.setOutlineColor(sf::Color(155, 155, 155));
+
+        Place place = laGrille.chargePlace(Coord(x, y));
 
         if (grid_state[y][x] == 0)
-          color_rect = sf::Color::Green;
+          color_rect = sf::Color::Yellow;
 
         else if (grid_state[y][x] == 1)
-          color_rect = sf::Color(0, 155, 0);
+          color_rect = sf::Color(std::max(place.getPheroSucre(), 250.), std::max(place.getPheroSucre(), 250.), 0);
 
         else if (grid_state[y][x] == 2)
-          color_rect = sf::Color::White;
+          color_rect = sf::Color(155, 155, 155);
 
         else if (grid_state[y][x] == 3)
-          color_rect = sf::Color(155, 155, 155);
+          color_rect = sf::Color::White;
 
         else
           color_rect = sf::Color::Black;

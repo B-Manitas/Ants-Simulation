@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-const int TAILLEGRILLE = 20;
+const int TAILLEGRILLE = 70;
 
 class Coord
 {
@@ -34,12 +34,14 @@ public:
   EnsCoord(std::vector<Coord> coords) : m_coords{coords} {};
   friend std::ostream &operator<<(std::ostream &out, const EnsCoord &tableau);
   bool operator==(const EnsCoord &ens) const;
+  bool operator!=(const EnsCoord &ens) const;
   bool contient(const Coord &c) const;
   void ajoute(const Coord c);
   void supprime(const Coord c);
   bool estVide() const;
   int taille() const;
   Coord ieme(const int &n) const;
+  void melange();
 };
 
 EnsCoord voisines(Coord const &c);

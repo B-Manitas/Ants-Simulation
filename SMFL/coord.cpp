@@ -4,6 +4,7 @@
 #include <vector>
 #include "doctest.h"
 #include "coord.hpp"
+#include <algorithm>
 
 // Définition des méthodes de la classe Coord.
 Coord::Coord(int x, int y) : m_x{x}, m_y{y}
@@ -122,6 +123,11 @@ bool EnsCoord::operator==(const EnsCoord &ens) const
   return true;
 }
 
+bool EnsCoord::operator!=(const EnsCoord &ens) const
+{
+  return not(*this == ens);
+}
+
 void EnsCoord::ajoute(const Coord c)
 {
   if (not contient(c))
@@ -130,6 +136,8 @@ void EnsCoord::ajoute(const Coord c)
 
 void EnsCoord::supprime(const Coord c)
 {
+  // std::cout << " | " << taille() << " " << position(c) << " | " << std::endl;
+
   if (contient(c))
     m_coords.erase(m_coords.begin() + position(c));
 
@@ -145,6 +153,11 @@ bool EnsCoord::estVide() const
 int EnsCoord::taille() const
 {
   return m_coords.size();
+}
+
+void EnsCoord::melange()
+{
+  std::random_shuffle(m_coords.begin(), m_coords.end());
 }
 
 Coord EnsCoord::ieme(const int &n) const
@@ -207,14 +220,14 @@ TEST_CASE("Test de la méthode contient.")
   CHECK_FALSE(EnsCoord(v).contient(Coord(5, 2)));
 }
 
-TEST_CASE("Test de l'opérateur ==")
+TEST_CASE("Test de l'opérateur == et !=.")
 {
   EnsCoord ens1 = EnsCoord(std::vector<Coord>({Coord(1, 2), Coord(3, 4)}));
   EnsCoord ens2 = EnsCoord(std::vector<Coord>({Coord(3, 4), Coord(1, 2)}));
   EnsCoord ens3 = EnsCoord(std::vector<Coord>({Coord(2, 3)}));
   CHECK(ens1 == ens1);
   CHECK(ens1 == ens2);
-  CHECK_FALSE(ens1 == ens3);
+  CHECK(ens1 != ens3);
 }
 
 TEST_CASE("Test de la méthode ajoute.")

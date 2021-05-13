@@ -36,7 +36,7 @@ public:
   bool contientFourmi() const { return m_numeroFourmi != -1; };
   bool contientPheroSucre() const { return m_pheroSucre > 0; }
   bool estVide() const { return not(contientSucre() && contientNid() && contientFourmi()); }
-  bool estSurUnePiste() const { return m_pheroNid > 0 && not contientNid(); };
+  bool estSurUnePiste() const { return m_pheroSucre > 0; };
   bool poseSucre();
   bool poseNid();
   void enleveSucre();

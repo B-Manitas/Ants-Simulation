@@ -1,8 +1,8 @@
 #include "grille.hpp"
+#include "action.hpp"
 #include "place.hpp"
 #include "coord.hpp"
 #include "fourmi.hpp"
-#include "action.hpp"
 #include "grilleFourmis.hpp"
 #include "doctest.h"
 #include <vector>
@@ -149,47 +149,77 @@ void initialiseGrille(Grille &g, GrilleFourmis &lesFourmisGrille, EnsCoord lesNi
 
 void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmisGrille)
 {
-  EnsCoord lesSucres = EnsCoord(std::vector<Coord>({Coord(15, 7), Coord(13, 15)}));
-  EnsCoord lesNids = EnsCoord(std::vector<Coord>({Coord(9, 9), Coord(9, 10), Coord(10, 9), Coord(10, 10)}));
-  EnsCoord lesFourmis = EnsCoord(std::vector<Coord>({Coord(8, 8), Coord(9, 8), Coord(10, 8), Coord(11, 8),
-                                                     Coord(8, 9), Coord(11, 9), Coord(8, 10), Coord(11, 10),
-                                                     Coord(8, 11), Coord(9, 11)}));
+  int n_sucre = 2;
+  int n_nid = 1;
+  int n_fourmi = 10;
 
-  initialiseGrille(laGrille, lesFourmisGrille, lesNids, lesSucres, lesFourmis);
+  EnsCoord ens;
+  EnsCoord ens_nid;
+  EnsCoord ens_nid_voisine;
+  EnsCoord ens_sucres;
+  EnsCoord ens_fourmi;
+  for (int i = 0; i < n_sucre; i++)
+  {
+    Coord rand_coord = laGrille.randPlace().getCoord();
+    if (not ens.contient(rand_coord))
+    {
+      ens.ajoute(rand_coord);
+      ens_sucres.ajoute(rand_coord);
+    }
+  }
+
+  Coord rand_coord = laGrille.randPlace().getCoord();
+  if (not ens.contient(rand_coord))
+  {
+    ens.ajoute(rand_coord);
+    ens_nid.ajoute(rand_coord);
+
+    EnsCoord voisines_coord = voisines(rand_coord);
+    for (int i = 0; i < voisines_coord.taille(); i++)
+      ens_nid_voisine.ajoute(voisines_coord.ieme(i));
+  }
+
+  if (n_fourmi > ens_nid_voisine.taille())
+    n_fourmi = ens_nid_voisine.taille();
+
+  for (int i = 0; i < n_fourmi; i++)
+  {
+    Coord rand_coord = choixHasard(ens_nid_voisine);
+    ens_fourmi.ajoute(rand_coord);
+    ens_nid_voisine.supprime(rand_coord);
+  }
+
+  initialiseGrille(laGrille, lesFourmisGrille, ens_nid, ens_sucres, ens_fourmi);
 }
 
-void mettreAJourUneFourmi(Fourmi f, Grille &laGrille, GrilleFourmis &lesFourmis)
+void mettreAJourUneFourmi(Fourmi &f, Grille &laGrille)
 {
   Coord c = f.getCoord();
   Place p1 = laGrille.chargePlace(c);
   EnsCoord voisCoord = voisines(c);
+  voisCoord.melange();
 
-  std::vector<int> action_i = std::vector<int>{2, 3, 4, 7};
-  for (auto &numR : action_i)
-  {
-    Coord cv = voisCoord.ieme(rand() % voisCoord.taille());
-    voisCoord.supprime(cv);
-    Place p2 = laGrille.chargePlace(cv);
-
-    if (Action().condtion_n(numR, f, p1, p2))
+  for (int i = 0; i < voisCoord.taille(); i++)
+    for (int num_r = 2; num_r < 8; num_r++)
     {
-      // std::cout << numR << " ";
-      Action().action_n(numR, f, p1, p2);
-      laGrille.rangePlace(p1);
-      laGrille.rangePlace(p2);
-      lesFourmis.rangeFourmi(f);
-      return;
+      Coord cv = voisCoord.ieme(i);
+      Place p2 = laGrille.chargePlace(cv);
+
+      if (condtion_n(num_r, f, p1, p2))
+      {
+        std::cout << num_r << " ";
+        action_n(num_r, f, p1, p2);
+        laGrille.rangePlace(p1);
+        laGrille.rangePlace(p2);
+        return;
+      }
     }
-    // for (int i = 0; i < voisCoord.taille(); i++)
-    // {
-    // }
-  }
 }
 
 void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis)
 {
-  for (auto &f : lesFourmis.m_grilleF)
-    mettreAJourUneFourmi(f, laGrille, lesFourmis);
+  for (int i = 0; i < lesFourmis.taille(); i++)
+    mettreAJourUneFourmi(lesFourmis.m_grilleF[i], laGrille);
 }
 
 TEST_SUITE_BEGIN("Test de la classe Grille.");
