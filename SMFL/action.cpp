@@ -1,6 +1,6 @@
-#include "action.hpp"
-#include "fourmi.hpp"
-#include "place.hpp"
+#include "Action.hpp"
+#include "Ant.hpp"
+#include "Place.hpp"
 #include "doctest.h"
 
 bool condition1(Fourmi ant, Place p2) { return p2.isContainingAnt(); };

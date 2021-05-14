@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
-#include "main.hpp"
-#include "coord.hpp"
-#include "place.hpp"
-#include "grille.hpp"
-#include "grilleFourmis.hpp"
+#include "Main.hpp"
+#include "Coord.hpp"
+#include "Place.hpp"
+#include "Grid.hpp"
+#include "GridAnts.hpp"
 
 #include <fstream>
 #include <sstream>

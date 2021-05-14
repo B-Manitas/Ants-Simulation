@@ -1,7 +1,7 @@
 #ifndef ACTION_HPP
 #define ACTION_HPP
-#include "fourmi.hpp"
-#include "place.hpp"
+#include "Ant.hpp"
+#include "Place.hpp"
 
 /**
  * Return true if the ant is alive and the place p2 contains an ant, otherwise false. 

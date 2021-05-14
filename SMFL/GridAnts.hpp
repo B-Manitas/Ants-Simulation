@@ -2,7 +2,7 @@
 #define GRILLE_FOURMIS_HPP
 
 #include <vector>
-#include "fourmi.hpp"
+#include "Ant.hpp"
 
 struct GrilleFourmis
 {

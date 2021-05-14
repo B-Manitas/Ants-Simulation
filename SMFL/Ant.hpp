@@ -1,6 +1,6 @@
 #ifndef Fourmi_HPP
 #define Fourmi_HPP
-#include "coord.hpp"
+#include "Coord.hpp"
 
 class Fourmi
 {

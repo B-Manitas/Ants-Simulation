@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "doctest.h"
-#include "coord.hpp"
+#include "Coord.hpp"
 
 Coord::Coord(int x, int y) : m_x{x}, m_y{y}
 {

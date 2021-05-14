@@ -1,9 +1,9 @@
-#include "grille.hpp"
-#include "action.hpp"
-#include "place.hpp"
-#include "coord.hpp"
-#include "fourmi.hpp"
-#include "grilleFourmis.hpp"
+#include "Grid.hpp"
+#include "Action.hpp"
+#include "Place.hpp"
+#include "Coord.hpp"
+#include "Ant.hpp"
+#include "GridAnts.hpp"
 #include "doctest.h"
 #include <vector>
 #include <iostream>

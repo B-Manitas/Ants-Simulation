@@ -1,6 +1,6 @@
-#include "place.hpp"
-#include "fourmi.hpp"
-#include "coord.hpp"
+#include "Place.hpp"
+#include "Ant.hpp"
+#include "Coord.hpp"
 #include "doctest.h"
 #include <sstream>
 

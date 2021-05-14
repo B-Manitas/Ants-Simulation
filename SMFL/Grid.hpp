@@ -1,10 +1,10 @@
 #ifndef GRILLE_HPP
 #define GRILLE_HPP
 
-#include "coord.hpp"
-#include "place.hpp"
-#include "fourmi.hpp"
-#include "grilleFourmis.hpp"
+#include "Coord.hpp"
+#include "Place.hpp"
+#include "Ant.hpp"
+#include "GridAnts.hpp"
 #include <vector>
 #include <iostream>
 

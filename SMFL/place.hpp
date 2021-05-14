@@ -1,8 +1,8 @@
 #ifndef PLACE_H
 #define PLACE_H
 
-#include "coord.hpp"
-#include "fourmi.hpp"
+#include "Coord.hpp"
+#include "Ant.hpp"
 #include <iostream>
 
 class Place

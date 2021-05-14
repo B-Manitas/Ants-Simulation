@@ -1,6 +1,6 @@
-#include "grilleFourmis.hpp"
-#include "fourmi.hpp"
-#include "coord.hpp"
+#include "GridAnts.hpp"
+#include "Ant.hpp"
+#include "Coord.hpp"
 #include "doctest.h"
 
 int GrilleFourmis::position(int const id)

@@ -7,8 +7,8 @@ endif
 all: compile-sfml link-sfml
 	./main
 
-test.o: test.cpp coord.hpp fourmi.hpp place.hpp grille.hpp action.hpp
-	g++ -Wall -std=c++11 -c test.cpp
+test.o: Test.cpp Coord.hpp Ant.hpp Place.hpp Grid.hpp Action.hpp
+	g++ -Wall -std=c++11 -c Test.cpp
 
 test: test.o coord.o fourmi.o place.o grille.o action.o
 	g++ -Wall -std=c++11 -o test test.o coord.o fourmi.o place.o grille.o action.o
@@ -17,7 +17,7 @@ run-test: test
 	-$(RM) *.o
 	./test
 
-principal.o: principal.hpp coord.hpp fourmi.hpp place.hpp grille.hpp grilleFourmis.hpp action.hpp
+principal.o: principal.hpp Coord.hpp Ant.hpp Place.hpp Grid.hpp GridAnts.hpp Action.hpp
 	g++ -Wall -std=c++11 -c principal.cpp
 
 principal: principal.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
@@ -27,7 +27,7 @@ run-principal: principal
 	-$(RM) *.o
 	./principal
 
-main.o: coord.hpp fourmi.hpp place.hpp grille.hpp grilleFourmis.hpp action.hpp
+main.o: Coord.hpp Ant.hpp Place.hpp Grid.hpp GridAnts.hpp Action.hpp
 	g++ -Wall -std=c++11 -c main.cpp
 
 main: main.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o

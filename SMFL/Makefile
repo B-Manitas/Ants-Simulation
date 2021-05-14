@@ -13,7 +13,7 @@ all: main clean
 	./main
 
 
-main.o: main.hpp coord.hpp fourmi.hpp place.hpp action.hpp grille.hpp grilleFourmis.hpp
+main.o: Main.hpp Coord.hpp Ant.hpp Place.hpp Action.hpp Grid.hpp GridAnts.hpp
 	g++ -Wall -std=c++11 -Isrc/include -c main.cpp
 
 main: main.o coord.o fourmi.o place.o action.o grille.o grilleFourmis.o
