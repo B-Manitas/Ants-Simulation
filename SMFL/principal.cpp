@@ -22,7 +22,7 @@ std::string repeat_string(std::string str, int n)
   return new_str;
 }
 
-GrilleFourmis initialiserEmplacements(Grille &laGrille)
+GrilleFourmis initializeRandomPlaces(Grille &laGrille)
 {
   EnsCoord lesSucres = EnsCoord(std::vector<Coord>({Coord(15, 7), Coord(13, 15)}));
   EnsCoord lesNids = EnsCoord(std::vector<Coord>({Coord(9, 9), Coord(9, 10), Coord(10, 9), Coord(10, 10)}));
@@ -30,7 +30,7 @@ GrilleFourmis initialiserEmplacements(Grille &laGrille)
                                                      Coord(8, 9), Coord(11, 9), Coord(8, 10), Coord(11, 10),
                                                      Coord(8, 11), Coord(9, 11)}));
 
-  GrilleFourmis gFourmis = initialiseGrille(laGrille, lesNids, lesSucres, lesFourmis);
+  GrilleFourmis gFourmis = initializeGrid(laGrille, lesNids, lesSucres, lesFourmis);
   testCoherence(laGrille, gFourmis, "Initialisation");
 
   return gFourmis;
@@ -58,22 +58,22 @@ void dessineGrille(Grille &g, GrilleFourmis &lesFourmis, int n)
     {
       file << "|";
       Coord c = Coord(x, y);
-      Place p = g.chargePlace(c);
+      Place p = g.getPlace(c);
       Fourmi f = Fourmi();
 
-      if (lesFourmis.contientFourmisCoord(c))
-        f = lesFourmis.chargeFourmi(c);
+      if (lesFourmis.isContainingAntsCoord(c))
+        f = lesFourmis.getAnt(c);
 
-      if (p.contientFourmi() && f.chercheSucre())
+      if (p.isContainingAnt() && f.lookForSugar())
         file << " f" << f.getNum();
 
-      else if (p.contientFourmi())
+      else if (p.isContainingAnt())
         file << " F" << f.getNum();
 
-      else if (p.contientNid())
+      else if (p.isContainingAntNest())
         file << " n ";
 
-      else if (p.contientSucre())
+      else if (p.isContainingSugar())
         file << " s ";
 
       else
@@ -119,7 +119,7 @@ void dessinePPM(Grille &laGrille, GrilleFourmis &lesFourmis, int n)
 
   // ecriture de l’entete
   fichier << "P3" << std::endl
-          << TAILLEGRILLE << " " << TAILLEGRILLE << " " << std::endl
+          << GRID_SIZE << " " << GRID_SIZE << " " << std::endl
           << 255 << " " << std::endl;
 
   for (int y = 0; y < laGrille.taille(); y++)
@@ -127,27 +127,27 @@ void dessinePPM(Grille &laGrille, GrilleFourmis &lesFourmis, int n)
     for (int x = 0; x < laGrille.taille(); x++)
     {
       Coord c = Coord(x, y);
-      Place p = laGrille.chargePlace(c);
+      Place p = laGrille.getPlace(c);
       Fourmi f = Fourmi();
 
-      if (lesFourmis.contientFourmisCoord(c))
-        f = lesFourmis.chargeFourmi(c);
+      if (lesFourmis.isContainingAntsCoord(c))
+        f = lesFourmis.getAnt(c);
 
-      if (p.contientFourmi() && f.chercheSucre())
+      if (p.isContainingAnt() && f.lookForSugar())
         g = 255;
 
-      else if (p.contientNid())
+      else if (p.isContainingAntNest())
         b = 255;
 
-      else if (p.contientSucre())
+      else if (p.isContainingSugar())
       {
         r = 255;
         g = 255;
         b = 255;
       }
 
-      else if (p.getPheroSucre() > 0)
-        g = p.getPheroSucre();
+      else if (p.getPheroSugar() > 0)
+        g = p.getPheroSugar();
 
       else
       {
@@ -171,7 +171,7 @@ void dessinePheroNid(Grille &g)
   {
     std::cout << " | ";
     for (int x = 0; x < g.taille(); x++)
-      std::cout << g.m_grille[y][x].getPheroNid() << " | ";
+      std::cout << g.m_grille[y][x].getPheroAntNest() << " | ";
 
     std::cout << std::endl;
   }
@@ -181,11 +181,11 @@ void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string titl
 {
   std::ostringstream error_msg;
 
-  for (auto &f : lesFourmis.m_grilleF)
+  for (auto &f : lesFourmis.m_grid)
   {
-    Place pF = laGrille.chargePlace(f.getCoord());
+    Place pF = laGrille.getPlace(f.getCoord());
 
-    if (pF.getNumeroFourmi() != f.getNum())
+    if (pF.getIdAnt() != f.getNum())
     {
       error_msg << title << std::endl;
       error_msg << "Erreur Incoherence: L'indice d'une fourmi ne correspond pas à sa place." << std::endl
@@ -199,9 +199,9 @@ void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string titl
   for (int y = 0; y < laGrille.taille(); y++)
     for (int x = 0; x < laGrille.taille(); x++)
     {
-      Place p = laGrille.chargePlace(Coord(x, y));
+      Place p = laGrille.getPlace(Coord(x, y));
 
-      if (p.contientFourmi() && not lesFourmis.contientFourmis(p.getNumeroFourmi()))
+      if (p.isContainingAnt() && not lesFourmis.isContainingAnts(p.getIdAnt()))
       {
         error_msg << title << std::endl;
         error_msg << "Erreur Incoherence: Une place contient une fourmi qui n'existe pas." << std::endl
@@ -221,8 +221,8 @@ void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string titl
 //   if (context.shouldExit())
 //     return test_result;
 
-//   Grille laGrille = Grille(TAILLEGRILLE);
-//   GrilleFourmis lesFourmis = initialiserEmplacements(laGrille);
+//   Grille laGrille = Grille(GRID_SIZE);
+//   GrilleFourmis lesFourmis = initializeRandomPlaces(laGrille);
 //   GrilleFourmis lesFourmis2 = lesFourmis;
 //   int n_iteration = 20;
 
@@ -230,12 +230,12 @@ void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string titl
 //   {
 //     dessineGrille(laGrille, lesFourmis, i);
 //     dessinePPM(laGrille, lesFourmis, i);
-//     mettreAJourEnsFourmis(laGrille, lesFourmis);
+//     updateSetAnts(laGrille, lesFourmis);
 //     testCoherence(laGrille, lesFourmis, "Simulation " + std::to_string(i));
-//     laGrille.diminuePheroSucre();
+//     laGrille.decreasePheroSugar();
 //   }
 
-//   if (lesFourmis.m_grilleF == lesFourmis2.m_grilleF)
+//   if (lesFourmis.m_grid == lesFourmis2.m_grid)
 //     std::cout << "equal" << std::endl;
 
 //   return 0;

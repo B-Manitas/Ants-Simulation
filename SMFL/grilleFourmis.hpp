@@ -6,20 +6,19 @@
 
 struct GrilleFourmis
 {
-  std::vector<Fourmi> m_grilleF;
+  std::vector<Fourmi> m_grid;
 
-  GrilleFourmis() : m_grilleF(std::vector<Fourmi>()){};
-  // GrilleFourmis(int taille);
+  GrilleFourmis() : m_grid(std::vector<Fourmi>()){};
+  int position(int const id);
 
-  int taille() { return m_grilleF.size(); };
-  bool contientFourmis(int idFourmi);
-  bool contientFourmisCoord(Coord c);
-  // void supprime(Coord c);
-  int position(int const &idFourmi);
-  Fourmi chargeFourmi(Coord c);
-  void rangeFourmi(Fourmi &f);
-  Fourmi chercheFourmi(int idFourmi);
-  friend std::ostream &operator<<(std::ostream &out, GrilleFourmis &grille);
+  int getSize() const { return m_grid.size(); };
+  Fourmi getAnt(Coord const &coord) const;
+  void setAnt(Fourmi const &ant);
+
+  bool isContainingAnts(int const id) const;
+  bool isContainingAntsCoord(Coord const &coord) const;
+
+  friend std::ostream &operator<<(std::ostream &out, GrilleFourmis const &ants);
 };
 
 #endif

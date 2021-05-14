@@ -1,23 +1,26 @@
 #include "fourmi.hpp"
 #include "coord.hpp"
 #include "doctest.h"
+#include <sstream>
 
-Fourmi::Fourmi(Coord c, int numero) : m_coord{c}, m_num{numero}, m_contientSucre{false}
+Fourmi::Fourmi(Coord c, int index) : m_coord{c}, m_id{index}, m_isCarryingSugar{false}
 {
-  if (m_num < 0 and m_num != -1)
-    throw std::runtime_error("Le numéro de la fourmi doit être positif. ");
+  if (m_id < 0 and m_id != -1)
+  {
+    std::ostringstream msg_error;
+    msg_error << "Error Constructor Ant : The index of the ant must be positif or equal to -1, if it's a ghost ant."
+              << "\nThe index passed in parameter is equal to "
+              << index
+              << ".";
+    throw std::invalid_argument(msg_error.str());
+  }
 }
 
-bool Fourmi::operator==(const Fourmi &f) const
+std::ostream &operator<<(std::ostream &out, const Fourmi &ant)
 {
-  return f.getCoord() == m_coord && f.getNum() == m_num;
-}
-
-std::ostream &operator<<(std::ostream &out, const Fourmi &f)
-{
-  out << "{ Coord: " << f.getCoord()
-      << ", Num: " << f.getNum()
-      << ", Sucre: " << ((f.chercheSucre() == true) ? "Non" : "Oui")
+  out << "{ Coord: " << ant.getCoord()
+      << ", Id: " << ant.getIndex()
+      << ", Sugar: " << ((ant.lookForSugar() == true) ? "Yes" : "No")
       << " }";
 
   return out;

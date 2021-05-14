@@ -9,51 +9,111 @@ class Place
 {
 private:
   Coord m_coord;
-  int m_numeroFourmi;
-  int m_pheroSucre;
-  double m_pheroNid;
-  int m_morceauSucre;
-  int m_morceauNid;
+  int m_idAnt;
+  int m_pieceSugar;
+  int m_pieceAntNest;
+  int m_pheroSugar;
+  double m_pheroAntNest;
 
 public:
-  // Constructor
-  Place() : m_coord{Coord()}, m_numeroFourmi{-1},
-            m_pheroSucre{0}, m_pheroNid{0},
-            m_morceauSucre{0}, m_morceauNid{0} {};
-  Place(Coord coord) : m_coord{coord}, m_numeroFourmi{-1},
-                       m_pheroSucre{0}, m_pheroNid{0},
-                       m_morceauSucre{0}, m_morceauNid{0} {};
+  Place() : m_coord{Coord()}, m_idAnt{-1},
+            m_pieceSugar{0}, m_pieceAntNest{0},
+            m_pheroSugar{0}, m_pheroAntNest{0} {};
 
-  // Les getters.
+  Place(Coord coord) : m_coord{coord}, m_idAnt{-1},
+                       m_pieceSugar{0}, m_pieceAntNest{0},
+                       m_pheroSugar{0}, m_pheroAntNest{0} {};
+
+  /**Get the coordinate of the place.*/
   Coord getCoord() const { return m_coord; };
-  double getPheroSucre() const { return m_pheroSucre; };
-  double getPheroNid() const { return m_pheroNid; };
-  int getNumeroFourmi() const { return m_numeroFourmi; };
-  int getMorceauSucre() const { return m_morceauSucre; };
-  int getMorceauNid() const { return m_morceauNid; };
+  /**Get the value of sugar pheromones at the place.*/
+  double getPheroSugar() const { return m_pheroSugar; };
+  /**Get the value of ant nest pheromones at the place.*/
+  double getPheroAntNest() const { return m_pheroAntNest; };
+  /**Get the ant index of the place.*/
+  int getIdAnt() const { return m_idAnt; };
+  /**Get the number of sugar cubes from the place.*/
+  int getPieceSugar() const { return m_pieceSugar; };
+  /**Get the number of ant nest pieces from the place.*/
+  int getPieceAntNest() const { return m_pieceAntNest; };
 
-  // Les méthodes générales.
-  bool contientSucre() const { return m_morceauSucre > 0; };
-  bool contientNid() const { return m_morceauNid > 0; };
-  bool contientFourmi() const { return m_numeroFourmi != -1; };
-  bool contientPheroSucre() const { return m_pheroSucre > 0; }
-  bool estVide() const { return not(contientSucre() && contientNid() && contientFourmi()); }
-  bool estSurUnePiste() const { return m_pheroSucre > 0; };
-  bool poseNid();
-  bool poseSucre(int quantite = 5);
-  void enleveSucre(int quantite = 5) { m_morceauSucre = std::max(m_morceauSucre - quantite, 0); };
-  void enlevePheroSucre() { m_pheroSucre = 0; };
-  bool poseFourmi(Fourmi fourmi);
-  void enleveFourmi() { m_numeroFourmi = -1; };
-  void posePheroNid(double quantite);
-  void posePheroSucre(double quantite = 255);
-  void diminuerPheroSucre() { m_pheroSucre = std::max(m_pheroSucre - 1, 0); };
+  /**Returns true if the place contains sugar, otherwise false.*/
+  bool isContainingSugar() const { return m_pieceSugar > 0; };
+  /**Returns true if the place contains an ant nest, otherwise false.*/
+  bool isContainingAntNest() const { return m_pieceAntNest > 0; };
+  /**Returns true if the place contains an ant, otherwise false.*/
+  bool isContainingAnt() const { return m_idAnt != -1; };
+  /**Returns true if the place contains a sugar pheromone, otherwise false.*/
+  bool isContainingPheroSugar() const { return m_pheroSugar > 0; }
+  /**Returns true if the place is empty, otherwise false.*/
+  bool isEmpty() const { return not(isContainingSugar() && isContainingAntNest() && isContainingAnt()); }
+  /**Returns true if the place is on sugar trail, otherwise false.*/
+  bool isOnSugarTrail() const { return m_pheroSugar > 0; };
+
+  /**
+   * Put sugar on the place.
+   * @param quantity The quantity of sugar. By default, the quantity is 5.
+   * @return Return true if the sugar has been putted, otherwise false.
+  */
+  bool putSugar(int quantity = 5);
+  /**
+   * Put ant on the place.
+   * @param ant The ant.
+   * @return Return true if the ant has been putted, otherwise false.
+  */
+  bool putAnt(Fourmi ant);
+  /**
+   * Put an ant nest on the place.
+   * @return Return true if the ant nest has been putted, otherwise false.
+  */
+  bool putAntNest();
+  /**
+   * Put sugar pheromone on the place.
+   * @param quantity The quantity of sugar pheromone. By default, the quantity is 255.
+   * @return Return true if the sugar pheromone has been putted, otherwise false.
+  */
+  void putPheroSugar(double quantity = 255);
+  /**
+   * Put pheromones from the ant nest on the place.
+   * @param quantity The quantity of sugar..
+   * @return Return true if the pheromones from the ant nest has been putted, otherwise false.
+  */
+  void putPheroAntNest(double quantity);
+
+  /**
+   * Remove sugar on the place.
+   * @param quantity The quantity of sugar. By default, the quantity is 5.
+  */
+  void removeSugar(int quantity = 5) { m_pieceSugar = std::max(m_pieceSugar - quantity, 0); };
+  /**Remove the ant on the place.*/
+  void removeAnt() { m_idAnt = -1; };
+  /** Remove sugar pheromone on the place.*/
+  void removePheroSugar() { m_pheroSugar = 0; };
+  /**
+   * Decrease the quantity of sugar pheromone on the place.
+   * @param quantity The quantity of sugar. By default, the quantity is 5.
+  */
+  void decreasePheroSugar(int quantity = 5) { m_pheroSugar = std::max(m_pheroSugar - quantity, 0); };
+
   bool operator==(const Place &p) const;
-  bool operator!=(const Place &p) const;
+  bool operator!=(const Place &p) const { return !(*this == p); };
   friend std::ostream &operator<<(std::ostream &out, const Place &place);
 };
 
-bool estPlusProcheNid(Place p1, Place p2);
-void deplaceFourmi(Fourmi &fourmi, Place &p1, Place &p2);
+/**
+ * Returns if place p1 is closer to the ant nest than place p2.
+ * @param p1 The first place.
+ * @param p2 The second place.
+ * @return Returns true if place p1 is closer to the ant nest than place p2, otherwise false.
+ */
+bool isCloserToNest(Place p1, Place p2);
+
+/**
+ * Move the ant from place p1 to place p2.
+ * @param ant The ant to move.
+ * @param p1 The current place of the ant.
+ * @param p2 The place where the ant will be moved.
+ */
+void moveAnt(Fourmi &ant, Place &p1, Place &p2);
 
 #endif

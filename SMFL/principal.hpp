@@ -9,7 +9,7 @@
 #include <vector>
 
 std::string repeat_string(std::string str, int n);
-GrilleFourmis initialiserEmplacements(Grille &laGrille);
+GrilleFourmis initializeRandomPlaces(Grille &laGrille);
 void dessineGrille(Grille &g, GrilleFourmis &lesFourmis, int n);
 void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string title = "");
 

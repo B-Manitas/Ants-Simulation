@@ -4,192 +4,187 @@
 #include "doctest.h"
 #include <sstream>
 
-bool Place::poseSucre(int quantite)
+bool Place::putSugar(int quantity)
 {
-  if (not contientFourmi())
+  if (not isContainingAnt())
   {
-    m_morceauSucre += quantite;
-    posePheroSucre(255);
+    m_pieceSugar += quantity;
+    putPheroSugar(255);
     return true;
   }
 
   return false;
 };
 
-bool Place::poseNid()
+bool Place::putAnt(Fourmi ant)
 {
-  if (not contientFourmi())
-  {
-    m_morceauNid++;
-    posePheroNid(1);
-    return true;
-  }
-
-  return false;
-};
-
-void Place::posePheroSucre(double quantite)
-{
-  if (quantite > 0)
-    m_pheroSucre += (quantite > 255) ? 255 : quantite;
-
-  m_pheroSucre = std::min(m_pheroSucre, 255);
-};
-
-void Place::posePheroNid(double quantite)
-{
-  if (quantite > 0)
-    m_pheroNid += (quantite > 1) ? 1 : quantite;
-
-  m_pheroNid = std::min(m_pheroNid, 1.);
-};
-
-bool Place::poseFourmi(Fourmi fourmi)
-{
-  if (contientFourmi() or contientNid() or (contientSucre() && fourmi.chercheSucre()))
+  if (isContainingAnt() or isContainingAntNest() or (isContainingSugar() && ant.lookForSugar()))
     return false;
 
-  m_numeroFourmi = fourmi.getNum();
+  m_idAnt = ant.getIndex();
   return true;
 };
 
-bool Place::operator==(const Place &p) const
+bool Place::putAntNest()
 {
-  return (m_coord == p.getCoord() and
-          m_pheroSucre == p.getPheroSucre() and
-          m_pheroNid == p.getPheroNid() and
-          m_numeroFourmi == p.getNumeroFourmi() and
-          contientSucre() == p.contientSucre() and
-          contientNid() == p.contientNid());
-}
+  if (not isContainingAnt())
+  {
+    m_pieceAntNest++;
+    putPheroAntNest(1);
+    return true;
+  }
 
-bool Place::operator!=(const Place &p) const
+  return false;
+};
+
+void Place::putPheroSugar(double quantity)
 {
-  return !(*this == p);
-}
+  if (quantity > 0)
+    m_pheroSugar += (quantity > 255) ? 255 : quantity;
+
+  m_pheroSugar = std::min(m_pheroSugar, 255);
+};
+
+void Place::putPheroAntNest(double quantity)
+{
+  if (quantity > 0)
+    m_pheroAntNest += (quantity > 1) ? 1 : quantity;
+
+  m_pheroAntNest = std::min(m_pheroAntNest, 1.);
+};
 
 std::ostream &operator<<(std::ostream &out, const Place &place)
 {
   out << "{ "
       << "Coord: " << place.getCoord() << ", "
-      << "Num Fourmi: " << place.getNumeroFourmi() << ", "
-      << "Phero Nid: " << place.getPheroNid() << ", "
-      << "Phero Sucre: " << place.getPheroSucre() << ", "
-      << "Nid: " << (place.contientNid() ? "Oui" : "Non") << ", "
-      << "Sucre: " << (place.contientSucre() ? "Oui" : "Non") << " }";
+      << "Num Fourmi: " << place.getIdAnt() << ", "
+      << "Phero Nid: " << place.getPheroAntNest() << ", "
+      << "Phero Sucre: " << place.getPheroSugar() << ", "
+      << "Nid: " << (place.isContainingAntNest() ? "Oui" : "Non") << ", "
+      << "Sucre: " << (place.isContainingSugar() ? "Oui" : "Non") << " }";
 
   return out;
 }
 
-void deplaceFourmi(Fourmi &fourmi, Place &p1, Place &p2)
+bool Place::operator==(const Place &p) const
 {
-  if (p2.poseFourmi(fourmi))
+  return (m_coord == p.getCoord() and
+          m_pheroSugar == p.getPheroSugar() and
+          m_pheroAntNest == p.getPheroAntNest() and
+          m_idAnt == p.getIdAnt() and
+          isContainingSugar() == p.isContainingSugar() and
+          isContainingAntNest() == p.isContainingAntNest());
+}
+
+void moveAnt(Fourmi &ant, Place &p1, Place &p2)
+{
+  if (p2.putAnt(ant))
   {
-    fourmi.deplace(p2.getCoord());
-    p1.enleveFourmi();
+    ant.move(p2.getCoord());
+    p1.removeAnt();
   }
 }
 
-bool estPlusProcheNid(Place p1, Place p2)
+bool isCloserToNest(Place p1, Place p2)
 {
-  return p1.getPheroNid() > p2.getPheroNid();
+  return p1.getPheroAntNest() > p2.getPheroAntNest();
 };
 
 TEST_SUITE_BEGIN("Test de la classe Place.");
 
-TEST_CASE("Test de la fonction poseSucre.")
+TEST_CASE("Test de la fonction putSugar.")
 {
   Place p;
-  p.poseSucre();
-  CHECK(p.contientSucre());
-  CHECK(p.getPheroSucre() == 255);
+  p.putSugar();
+  CHECK(p.isContainingSugar());
+  CHECK(p.getPheroSugar() == 255);
 
   Place p2 = Place(Coord(0, 0));
-  p2.poseFourmi(Fourmi(Coord(0, 0), 0));
-  CHECK_FALSE(p2.poseSucre());
+  p2.putAnt(Fourmi(Coord(0, 0), 0));
+  CHECK_FALSE(p2.putSugar());
 }
 
-TEST_CASE("Test de la fonction enleveSucre")
+TEST_CASE("Test de la fonction removeSugar")
 {
   Place p;
-  p.poseSucre(1);
-  p.enleveSucre();
-  CHECK_FALSE(p.contientSucre());
-  CHECK(p.getPheroSucre() == 255);
+  p.putSugar(1);
+  p.removeSugar();
+  CHECK_FALSE(p.isContainingSugar());
+  CHECK(p.getPheroSugar() == 255);
 }
 
-TEST_CASE("Test de la fonction poseNid")
+TEST_CASE("Test de la fonction putAntNest")
 {
   Place p;
-  p.poseNid();
-  CHECK(p.contientNid());
-  CHECK(p.getPheroNid() == 1);
-  CHECK_FALSE(p.poseFourmi(Fourmi()));
+  p.putAntNest();
+  CHECK(p.isContainingAntNest());
+  CHECK(p.getPheroAntNest() == 1);
+  CHECK_FALSE(p.putAnt(Fourmi()));
 }
 
-TEST_CASE("Test de la fonction poseFourmi")
+TEST_CASE("Test de la fonction putAnt")
 {
   // Testes de poser plusieurs fourmis sur une même place.
   Place p;
-  p.poseFourmi(Fourmi(Coord(), 0));
-  CHECK(p.contientFourmi());
-  CHECK_FALSE(p.poseFourmi(Fourmi(Coord(), 1)));
+  p.putAnt(Fourmi(Coord(), 0));
+  CHECK(p.isContainingAnt());
+  CHECK_FALSE(p.putAnt(Fourmi(Coord(), 1)));
 
   // Testes de poser un nid et une fourmis sur une même place.
   Place p1;
-  p1.poseNid();
-  CHECK_FALSE(p1.poseFourmi(Fourmi(Coord(), 0)));
+  p1.putAntNest();
+  CHECK_FALSE(p1.putAnt(Fourmi(Coord(), 0)));
 
   // Testes de poser un sucre et une fourmis sur une même case.
   Place p2;
-  p2.poseSucre();
-  CHECK_FALSE(p2.poseFourmi(Fourmi(Coord(), 0)));
+  p2.putSugar();
+  CHECK_FALSE(p2.putAnt(Fourmi(Coord(), 0)));
 
   // Testes de poser un sucre et une fourmis qui porte un sucre.
   Place p3 = Place(Coord());
-  p3.poseSucre();
+  p3.putSugar();
   Fourmi f = Fourmi(Coord(), 0);
-  f.porteSucre();
-  CHECK(p3.poseFourmi(f));
-  CHECK(p3.contientFourmi());
+  f.carrySugar();
+  CHECK(p3.putAnt(f));
+  CHECK(p3.isContainingAnt());
 }
 
-TEST_CASE("Test de la fonction enleveFourmi")
+TEST_CASE("Test de la fonction removeAnt")
 {
   Place p;
-  p.poseFourmi(Fourmi(Coord(), 0));
-  p.enleveFourmi();
-  CHECK_FALSE(p.contientFourmi());
+  p.putAnt(Fourmi(Coord(), 0));
+  p.removeAnt();
+  CHECK_FALSE(p.isContainingAnt());
 }
 
-TEST_CASE("Test de la fonction posePheroNid")
+TEST_CASE("Test de la fonction putPheroAntNest")
 {
   Place p;
-  p.posePheroNid(.5);
-  CHECK(p.getPheroNid() == .5);
+  p.putPheroAntNest(.5);
+  CHECK(p.getPheroAntNest() == .5);
 }
 
-TEST_CASE("Test de la fonction posePheroSucre")
+TEST_CASE("Test de la fonction putPheroSugar")
 {
   Place p;
-  p.posePheroSucre(100);
-  CHECK(p.getPheroSucre() == 100);
+  p.putPheroSugar(100);
+  CHECK(p.getPheroSugar() == 100);
 }
 
-TEST_CASE("Test de la fonction enlevePheroSucre")
+TEST_CASE("Test de la fonction removePheroSugar")
 {
   Place p;
-  p.posePheroSucre(100);
-  p.enlevePheroSucre();
-  CHECK_FALSE(p.contientPheroSucre());
+  p.putPheroSugar(100);
+  p.removePheroSugar();
+  CHECK_FALSE(p.isContainingPheroSugar());
 }
 
-TEST_CASE("Test de la fonction diminuePheroSucre")
+TEST_CASE("Test de la fonction decreasePheroSugar")
 {
   Place p;
-  p.posePheroSucre(255);
-  p.diminuerPheroSucre();
-  CHECK(p.getPheroSucre() == 254);
+  p.putPheroSugar(255);
+  p.decreasePheroSugar(1);
+  CHECK(p.getPheroSugar() == 254);
 }
 
 TEST_CASE("Test de l'operator== et !=.")
@@ -197,7 +192,7 @@ TEST_CASE("Test de l'operator== et !=.")
   Place p = Place(Coord(0, 0));
   Place p2 = Place(Coord(1, 0));
   Place p3 = Place(Coord(1, 0));
-  p3.poseSucre();
+  p3.putSugar();
 
   CHECK(p == p);
   CHECK(p != p2);
@@ -220,16 +215,16 @@ TEST_CASE("Test de l'operateur <<.")
   CHECK(stream.str() == streamCheck.str());
 }
 
-TEST_CASE("Test de la fonction deplaceFourmis.")
+TEST_CASE("Test de la fonction moveAnts.")
 {
   Coord c = Coord(0, 0);
   Place p1 = Place(c);
   Place p2 = Place(Coord(0, 1));
   Fourmi f = Fourmi(c, 1);
 
-  deplaceFourmi(f, p1, p2);
-  CHECK_FALSE(p1.contientFourmi());
-  CHECK(p2.contientFourmi());
+  moveAnt(f, p1, p2);
+  CHECK_FALSE(p1.isContainingAnt());
+  CHECK(p2.isContainingAnt());
   CHECK(f.getCoord() == p2.getCoord());
 }
 

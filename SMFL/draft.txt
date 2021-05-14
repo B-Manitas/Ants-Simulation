@@ -49,19 +49,19 @@ TEST_CASE("Test du constructeur de la class Grille.")
   for (int numRegle = 0; numRegle < 5; numRegle++)
     for (int i = 0; i < voisCoord.taille(); i++)
     {
-      Place vois = laGrille.chargePlace(voisCoord.ieme(i));
-      if (Action().condtion_n(numRegle, fourmi, pf, vois))
+      Place vois = laGrille.chargePlace(voisCoord.nth(i));
+      if (Action().condtionNth(numRegle, fourmi, pf, vois))
       {
-        Action().action_n(numRegle, fourmi, pf, vois);
-        laGrille.rangePlace(pf);
-        laGrille.rangePlace(vois);
+        Action().actionNth(numRegle, fourmi, pf, vois);
+        laGrille.setPlace(pf);
+        laGrille.setPlace(vois);
         return;
       }
     }
 }
 
 ==============
-    // dessineVecteur(lesFourmis.m_grilleF);
+    // dessineVecteur(lesFourmis.m_grid);
 
     // std::cout << "\nSimu: " << i << std::endl;
     // std::cout << std::endl;
@@ -71,43 +71,43 @@ TEST_CASE("Test du constructeur de la class Grille.")
     // std::cout << "\nFin" << std::endl;
 
 ==========
-// void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmis);
+// void initializeRandomPlaces(Grille &laGrille, GrilleFourmis &lesFourmis);
 // void dessine2DVecteur(std::vector<std::vector<Fourmi>> &t);
 
 =============
-void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmis)
+void initializeRandomPlaces(Grille &laGrille, GrilleFourmis &lesFourmis)
 {
   EnsCoord centre = EnsCoord();
   int idF = 0;
-  for (int y = TAILLEGRILLE / 2 - 2; y < TAILLEGRILLE / 2 + 2; y++)
-    for (int x = TAILLEGRILLE / 2 - 2; x < TAILLEGRILLE / 2 + 2; x++)
+  for (int y = GRID_SIZE / 2 - 2; y < GRID_SIZE / 2 + 2; y++)
+    for (int x = GRID_SIZE / 2 - 2; x < GRID_SIZE / 2 + 2; x++)
     {
       Coord c = Coord(x, y);
       centre.ajoute(c);
-      if (x >= TAILLEGRILLE / 2 - 1 && x < TAILLEGRILLE / 2 + 1 && y >= TAILLEGRILLE / 2 - 1 && y < TAILLEGRILLE / 2 + 1)
+      if (x >= GRID_SIZE / 2 - 1 && x < GRID_SIZE / 2 + 1 && y >= GRID_SIZE / 2 - 1 && y < GRID_SIZE / 2 + 1)
       {
         Place pNid = Place(c);
-        pNid.poseNid();
-        laGrille.rangePlace(pNid);
+        pNid.putAntNest();
+        laGrille.setPlace(pNid);
       }
       else
       {
         Place pF = Place(c);
         Fourmi f = Fourmi(c, idF);
-        pF.poseFourmi(f);
-        laGrille.rangePlace(pF);
-        lesFourmis.rangeFourmi(f);
+        pF.putAnt(f);
+        laGrille.setPlace(pF);
+        lesFourmis.setAnt(f);
         idF++;
       }
     }
 
-  Place pSucre = laGrille.randPlace();
+  Place pSucre = laGrille.getRandPlace();
 
   while (centre.contient(pSucre.getCoord()))
-    pSucre = laGrille.randPlace();
+    pSucre = laGrille.getRandPlace();
 
-  pSucre.poseSucre();
-  laGrille.rangePlace(pSucre);
+  pSucre.putSugar();
+  laGrille.setPlace(pSucre);
   testCoherence(laGrille, lesFourmis, "Initialisation");
 }
 
@@ -116,29 +116,71 @@ TEST_CASE("Test des méthodes de la classe Place.")
 {
   Coord c = Coord(0, 0);
   Place p = Place(Coord(0, 0));
-  CHECK_FALSE(p.contientSucre());
-  CHECK_FALSE(p.contientNid());
-  CHECK_FALSE(p.contientFourmi());
+  CHECK_FALSE(p.isContainingSugar());
+  CHECK_FALSE(p.isContainingAntNest());
+  CHECK_FALSE(p.isContainingAnt());
   CHECK_FALSE(p.estSurUnePiste());
   CHECK(p.estVide());
-  p.poseFourmi(Fourmi(c, 0));
-  CHECK(p.contientFourmi());
-  CHECK(p.getNumeroFourmi() == 0);
-  p.enleveFourmi();
-  p.poseSucre();
-  CHECK(p.contientSucre());
-  p.enleveSucre();
-  p.poseNid();
-  CHECK(p.contientNid());
-  p.poseFourmi(Fourmi(c, 0));
-  // CHECK_THROWS_AS(p.poseFourmi(Fourmi(c, 0)), std::runtime_error);
-  CHECK_FALSE(p.contientFourmi());
-  p.enleveSucre();
-  CHECK_FALSE(p.contientFourmi());
-  p.posePheroNid(2);
-  CHECK(p.getPheroNid() == 1);
-  p.posePheroSucre(300);
+  p.putAnt(Fourmi(c, 0));
+  CHECK(p.isContainingAnt());
+  CHECK(p.getIdAnt() == 0);
+  p.removeAnt();
+  p.putSugar();
+  CHECK(p.isContainingSugar());
+  p.removeSugar();
+  p.putAntNest();
+  CHECK(p.isContainingAntNest());
+  p.putAnt(Fourmi(c, 0));
+  // CHECK_THROWS_AS(p.putAnt(Fourmi(c, 0)), std::runtime_error);
+  CHECK_FALSE(p.isContainingAnt());
+  p.removeSugar();
+  CHECK_FALSE(p.isContainingAnt());
+  p.putPheroAntNest(2);
+  CHECK(p.getPheroAntNest() == 1);
+  p.putPheroSugar(300);
   CHECK(p.getPheroSucre() == 255);
-  p.diminuerPheroSucre();
+  p.decreasePheroSugar();
   CHECK(p.getPheroSucre() == 250);
+}
+
+=============================================
+        else if (not isPputing && w_event.mouseButton.button == sf::Mouse::Right)
+        {
+          int x = double(w_event.mouseButton.x) / TAILLE_CASE;
+          int y = double(w_event.mouseButton.y) / TAILLE_CASE;
+
+          if (y > 0 and x > 0 and y < GRID_SIZE and x < GRID_SIZE)
+          {
+            Place mouse_place = laGrille.chargePlace(Coord(x, y));
+
+            Fourmi mouse_fourmi = Fourmi(Coord(x, y), lesFourmis.nouvelleId());
+            if (mouse_place.isContainingAnt() && lesFourmis.isContainingAntsCoord(Coord(x, y)))
+            {
+
+              lesFourmis.supprime(lesFourmis.position());
+              mouse_place.removeAnt();
+              grid_state[y][x] = int(state_boxes::vide);
+            }
+
+            else if (mouse_place.estVide() and mouse_place.putAnt(mouse_fourmi))
+            {
+              lesFourmis.setAnt(mouse_fourmi);
+              grid_state[y][x] = int(state_boxes::fourmi);
+            }
+
+            laGrille.setPlace(mouse_place);
+          }
+        }
+
+====================
+int GrilleFourmis::nouvelleId()
+{
+  std::vector<int> id_existant;
+  int new_id = 0;
+
+  for (size_t i = 0; i < taille(); i++)
+    id_existant.push_back(m_grid[i].getNum());
+
+  while (std::find(id_existant.begin(), id_existant.end(), new_id) == id_existant.end())
+    new_id = rand() % 10000;
 }

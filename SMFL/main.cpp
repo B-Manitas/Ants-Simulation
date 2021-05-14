@@ -23,128 +23,144 @@ enum class state_boxes
   vide
 };
 
-void testCoherence(Grille &laGrille, GrilleFourmis &lesFourmis, std::string title)
+/**
+ * Test if the simulation is consistent with the grid and the position of the ants.
+ * Throw an exception if an inconsistency is found.
+ * @param grid The grid containing all the simulation squares.
+ * @param ants The grid containing all the ants in the simulation.
+*/
+void consistencyTest(Grille &grid, GrilleFourmis &ants, std::string title)
 {
   std::ostringstream error_msg;
 
-  for (auto &f : lesFourmis.m_grilleF)
+  // Take the first test. Test if the ant's index and square match.
+  for (auto &ant : ants.m_grid)
   {
-    Place pF = laGrille.chargePlace(f.getCoord());
+    Place square = grid.getPlace(ant.getCoord());
 
-    if (pF.getNumeroFourmi() != f.getNum())
+    if (square.getIdAnt() != ant.getIndex())
     {
       error_msg << title << std::endl;
-      error_msg << "Erreur Incoherence: L'indice d'une fourmi ne correspond pas à sa place." << std::endl
-                << "Fourmis: " << f << std::endl
-                << "Place: " << pF << std::endl;
+      error_msg << "Inconsistent Simulation Error: The index of an ant does not correspond to its square." << std::endl
+                << "Ant: " << ant << std::endl
+                << "Square: " << square << std::endl;
 
       throw std::runtime_error(error_msg.str());
     }
   }
 
-  for (int y = 0; y < laGrille.taille(); y++)
-    for (int x = 0; x < laGrille.taille(); x++)
+  // Take the second test. Test if the square has a ghost ant.
+  for (int y = 0; y < grid.getSize(); y++)
+    for (int x = 0; x < grid.getSize(); x++)
     {
-      Place p = laGrille.chargePlace(Coord(x, y));
+      Place square = grid.getPlace(Coord(x, y));
 
-      if (p.contientFourmi() && not lesFourmis.contientFourmis(p.getNumeroFourmi()))
+      if (square.isContainingAnt() && not ants.isContainingAnts(square.getIdAnt()))
       {
         error_msg << title << std::endl;
-        error_msg << "Erreur Incoherence: Une place contient une fourmi qui n'existe pas." << std::endl
-                  << "Place: " << p << std::endl
-                  << "Les Fourmis: " << lesFourmis << std::endl;
+        error_msg << "Inconsistent Simulation Error: A square contains an ant that doesn't exist." << std::endl
+                  << "Square: " << square << std::endl
+                  << "Ants: " << ants << std::endl;
 
         throw std::runtime_error(error_msg.str());
       }
     }
 }
 
-std::vector<std::vector<int>> getValueGrille(Grille &laGrille, GrilleFourmis &lesFourmis)
+/**
+ * Create a 2D vector with the state of each square.
+ * @param grid The grid containing all the simulation squares.
+ * @param ants The grid containing all the ants in the simulation.
+ * @return Returns a 2D vector of integer corresponding to the state of the square.
+*/
+std::vector<std::vector<int>> getGridState(Grille &grid, GrilleFourmis &ants)
 {
-  std::vector<std::vector<int>> grid(TAILLEGRILLE);
-  for (int y = 0; y < laGrille.taille(); y++)
-    for (int x = 0; x < laGrille.taille(); x++)
+  std::vector<std::vector<int>> color_grid(GRID_SIZE);
+
+  for (int y = 0; y < grid.getSize(); y++)
+    for (int x = 0; x < grid.getSize(); x++)
     {
-      Coord c = Coord(x, y);
-      Place p = laGrille.chargePlace(c);
-      Fourmi f = Fourmi();
+      Coord square_coord = Coord(x, y);
+      Place square = grid.getPlace(square_coord);
+      Fourmi ant = Fourmi();
 
-      if (lesFourmis.contientFourmisCoord(c))
-        f = lesFourmis.chargeFourmi(c);
+      if (ants.isContainingAntsCoord(square_coord))
+        ant = ants.getAnt(square_coord);
 
-      if (p.contientNid())
-        grid[y].push_back(int(state_boxes::nid));
+      // Square containing an ant nest.
+      if (square.isContainingAntNest())
+        color_grid[y].push_back(int(state_boxes::nid));
 
-      else if (p.contientSucre())
-        grid[y].push_back(int(state_boxes::sucre));
+      // Square containing some sugars.
+      else if (square.isContainingSugar())
+        color_grid[y].push_back(int(state_boxes::sucre));
 
-      else if (p.contientFourmi() && not f.chercheSucre())
-        grid[y].push_back(int(state_boxes::fourmi_sucre));
+      // Square containing an ant.
+      else if (square.isContainingAnt())
+        color_grid[y].push_back(int(state_boxes::fourmi));
 
-      else if (p.contientFourmi() && f.chercheSucre())
-        grid[y].push_back(int(state_boxes::fourmi));
+      // Square containing sugar pheromone.
+      else if (square.isContainingPheroSugar())
+        color_grid[y].push_back(int(state_boxes::pheroSucre));
 
-      else if (p.contientPheroSucre())
-        grid[y].push_back(int(state_boxes::pheroSucre));
-
+      // The square is empty.
       else
-        grid[y].push_back(int(state_boxes::vide));
+        color_grid[y].push_back(int(state_boxes::vide));
     }
 
-  return grid;
+  return color_grid;
 }
 
 int main(int argc, const char **argv)
 {
   srand((unsigned)time(NULL));
-  // Infrastructure docstest.
+
+  // Docstest infrastructure.
   doctest::Context context(argc, argv);
   int test_result = context.run();
   if (context.shouldExit())
     return test_result;
 
-  // Déclaration des variables.
-  const int TAILLE_CASE = 10;
+  // Variables declaration.
+  const int SQUARE_SIZE = 10;
   const int INTERVAL_TIME = 5;
-  int n_iteration = 0;
+  int iteration = 0;
   int time = 100;
-  bool isPlaying = false;
+  bool is_pputing = false;
 
-  // Création des Grilles.
-  Grille laGrille(TAILLEGRILLE);
-  GrilleFourmis lesFourmis;
-  initialiserEmplacements(laGrille, lesFourmis);
-  testCoherence(laGrille, lesFourmis, "Initialisation Grille");
-  std::vector<std::vector<int>> grid_state = getValueGrille(laGrille, lesFourmis);
+  // Creation of grids
+  Grille grid = Grille(GRID_SIZE);
+  GrilleFourmis ants;
 
-  // Gestion de l'interface grphique.
-  sf::RenderWindow window(sf::VideoMode(TAILLEGRILLE * TAILLE_CASE, TAILLEGRILLE * TAILLE_CASE + 60),
+  initializeRandomPlaces(grid, ants);
+  consistencyTest(grid, ants, "Grid Initialization");
+  std::vector<std::vector<int>> grid_state = getGridState(grid, ants);
+
+  // Create the application window.
+  sf::RenderWindow window(sf::VideoMode(GRID_SIZE * SQUARE_SIZE, GRID_SIZE * SQUARE_SIZE + 60),
                           "Ants Simulators by Manitas Bahri",
                           sf::Style::Close | sf::Style::Titlebar);
 
-  // Gestion de l'affichage des textes.
+  // Create the texts.
   sf::Font font;
   if (!font.loadFromFile("asset/arial.ttf"))
-  {
-    std::cout << "Failed to load the font." << std::endl;
-  }
+    std::cout << "Warning Font: Failed to load the font." << std::endl;
 
-  sf::Text txt_pause("Press 'Space' to play/pause.", font);
+  sf::Text txt_pause;
+  txt_pause.setFont(font);
   txt_pause.setCharacterSize(15);
-  txt_pause.setPosition(10, TAILLE_CASE * TAILLEGRILLE + 10);
+  txt_pause.setPosition(10, SQUARE_SIZE * GRID_SIZE + 10);
   txt_pause.setFillColor(sf::Color::White);
 
-  sf::Text txt_mouse("Use left/right mouse click to add and remove a sugar.", font);
+  sf::Text txt_mouse("Right click to toggled sugar/no sugar.", font);
   txt_mouse.setCharacterSize(15);
-  txt_mouse.setPosition(10, TAILLE_CASE * TAILLEGRILLE + 25);
+  txt_mouse.setPosition(10, SQUARE_SIZE * GRID_SIZE + 25);
   txt_mouse.setFillColor(sf::Color::White);
 
-  sf::Text txt_arrow("Use left/right arrow keys to change the speed time.", font);
+  sf::Text txt_arrow("Left  click to toggled ant/no ant.", font);
   txt_arrow.setCharacterSize(15);
-  txt_arrow.setPosition(10, TAILLE_CASE * TAILLEGRILLE + 40);
+  txt_arrow.setPosition(10, SQUARE_SIZE * GRID_SIZE + 40);
   txt_arrow.setFillColor(sf::Color::White);
-
-  sf::Color color_rect(sf::Color::White);
 
   while (window.isOpen())
   {
@@ -154,60 +170,49 @@ int main(int argc, const char **argv)
     {
       switch (w_event.type)
       {
+      // Closed window.
       case sf::Event::Closed:
         window.close();
+        std::cout << "Stop the simulation." << std::endl;
         break;
 
+      // Shortcut keyboard.
       case sf::Event::KeyPressed:
-        switch (w_event.key.code)
+        if (w_event.key.code == sf::Keyboard::Space)
+          is_pputing = !is_pputing;
+
+        // Increase the speed time.
+        else if (w_event.key.code == sf::Keyboard::Left)
         {
-        case sf::Keyboard::Space:
-          isPlaying = !isPlaying;
-          break;
-
-        case sf::Keyboard::Left:
-          time = std::max(time - INTERVAL_TIME, 0);
-          break;
-
-        case sf::Keyboard::Right:
-          time = std::min(time + INTERVAL_TIME, 1000);
-          break;
-
-        default:
-          break;
-        }
-        break;
-
-      case sf::Event::MouseButtonPressed:
-        if (not isPlaying && w_event.mouseButton.button == sf::Mouse::Left)
-        {
-          int x = double(w_event.mouseButton.x) / TAILLE_CASE;
-          int y = double(w_event.mouseButton.y) / TAILLE_CASE;
-          if (y > 0 and x > 0 and y < TAILLEGRILLE and x < TAILLEGRILLE)
-          {
-            Place mouse_place = laGrille.chargePlace(Coord(x, y));
-            if (mouse_place.poseSucre())
-            {
-              grid_state[y][x] = int(state_boxes::sucre);
-              laGrille.rangePlace(mouse_place);
-            }
-          }
+          time = std::max(time + INTERVAL_TIME, 0);
+          std::cout << "Time: " << time << std::endl;
         }
 
-        else if (not isPlaying && w_event.mouseButton.button == sf::Mouse::Right)
+        // Decrease the speed time.
+        else if (w_event.key.code == sf::Keyboard::Right)
         {
-          int x = double(w_event.mouseButton.x) / TAILLE_CASE;
-          int y = double(w_event.mouseButton.y) / TAILLE_CASE;
-          if (y > 0 and x > 0 and y < TAILLEGRILLE and x < TAILLEGRILLE)
-          {
-            Place mouse_place = laGrille.chargePlace(Coord(x, y));
-            mouse_place.enleveSucre();
-            mouse_place.enlevePheroSucre();
-            grid_state[y][x] = int(state_boxes::vide);
-            laGrille.rangePlace(mouse_place);
-          }
+          time = std::min(time - INTERVAL_TIME, 1000);
+          std::cout << "Time: " << time << std::endl;
         }
-        break;
+
+        // Stop the simulation.
+        else if (w_event.key.code == sf::Keyboard::Q)
+        {
+          window.close();
+          std::cout << "Stop the simulation." << std::endl;
+        }
+
+        // Reset the simulation.
+        else if (w_event.key.code == sf::Keyboard::R and not is_pputing)
+        {
+          grid = Grille(GRID_SIZE);
+          ants = GrilleFourmis();
+          initializeRandomPlaces(grid, ants);
+          consistencyTest(grid, ants, "Grid Initialization after Reset");
+          grid_state = getGridState(grid, ants);
+          iteration = 0;
+          std::cout << "The simulation is reset." << std::endl;
+        }
 
       default:
         break;
@@ -215,54 +220,67 @@ int main(int argc, const char **argv)
     }
 
     window.clear();
-    for (int y = 0; y < TAILLEGRILLE; y++)
-      for (int x = 0; x < TAILLEGRILLE; x++)
+    for (int y = 0; y < GRID_SIZE; y++)
+      for (int x = 0; x < GRID_SIZE; x++)
       {
-        // Dessine une case.
+        Place square = grid.getPlace(Coord(x, y));
+
+        // Create a square.
         sf::RectangleShape rect;
-        rect.setPosition(x * TAILLE_CASE, y * TAILLE_CASE);
-        rect.setSize(sf::Vector2f(TAILLE_CASE, TAILLE_CASE));
+        rect.setPosition(x * SQUARE_SIZE, y * SQUARE_SIZE);
+        rect.setSize(sf::Vector2f(SQUARE_SIZE, SQUARE_SIZE));
+        sf::Color color_rect;
 
-        Place place = laGrille.chargePlace(Coord(x, y));
-
-        if (grid_state[y][x] == 0)
+        // Colorize each square according to its state.
+        switch (grid_state[y][x])
+        {
+        case int(state_boxes::fourmi):
           color_rect = sf::Color::Yellow;
+          break;
 
-        else if (grid_state[y][x] == 1)
-          color_rect = sf::Color::Yellow;
-
-        else if (grid_state[y][x] == 2)
+        case int(state_boxes::nid):
           color_rect = sf::Color(155, 155, 155);
+          break;
 
-        else if (grid_state[y][x] == 3)
+        case int(state_boxes::sucre):
           color_rect = sf::Color::White;
+          break;
 
-        else if (grid_state[y][x] == 4)
-          color_rect = sf::Color(place.getPheroSucre(), place.getPheroSucre(), 0);
+        case int(state_boxes::pheroSucre):
+          color_rect = sf::Color(square.getPheroSugar(), square.getPheroSugar(), 0);
+          break;
 
-        else
+        default:
           color_rect = sf::Color::Black;
+          break;
+        }
 
         rect.setFillColor(color_rect);
         window.draw(rect);
       }
 
-    if (isPlaying)
+    // Update the next grid of the simulation.
+    if (is_pputing)
     {
-      mettreAJourEnsFourmis(laGrille, lesFourmis);
-      testCoherence(laGrille, lesFourmis, "Simulation " + std::to_string(n_iteration));
-      laGrille.diminuePheroSucre();
-      grid_state = getValueGrille(laGrille, lesFourmis);
-    }
+      updateSetAnts(grid, ants);
+      consistencyTest(grid, ants, "Simulation " + std::to_string(iteration));
+      grid.decreasePheroSugar(3);
+      grid_state = getGridState(grid, ants);
 
+      txt_pause.setString("Space to pause.");
+    }
+    else
+      txt_pause.setString("Space to play.");
+
+    // Draw all elements of the windows.
     window.draw(txt_pause);
     window.draw(txt_mouse);
     window.draw(txt_arrow);
     window.display();
 
+    // Pause the simulation.
     sf::sleep(sf::milliseconds(time));
-    n_iteration++;
+    iteration++;
   }
-
   return 0;
 }

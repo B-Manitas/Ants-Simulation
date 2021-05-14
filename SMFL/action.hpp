@@ -3,21 +3,95 @@
 #include "fourmi.hpp"
 #include "place.hpp"
 
-// Défition des conditions.
-bool condition1(Fourmi f, Place p2);
-bool condition2(Fourmi f, Place p2);
-bool condition3(Fourmi f, Place p2);
-bool condition4(Fourmi f, Place p1, Place p2);
-bool condition5(Fourmi f, Place p1, Place p2);
-bool condition6(Fourmi f, Place p1, Place p2);
-bool condition7(Fourmi f, Place p2);
-bool condtion_n(int n, Fourmi f, Place p1, Place p2);
+/**
+ * Return true if the ant is alive and the place p2 contains an ant, otherwise false. 
+ * @param ant The ant.
+ * @param p2 The place p2.
+*/
+bool condition1(Fourmi ant, Place p2);
+/**
+ * Returns true if the ant is looking for sugar and location p2 contains sugar, otherwise false. 
+ * @param ant The ant.
+ * @param p2 The place p2.
+*/
+bool condition2(Fourmi ant, Place p2);
+/**
+ * Returns true if the ant is looking for sugar and place p2 contains sugar, otherwise false.
+ * @param ant The ant.
+ * @param p2 The place p2.
+*/
+bool condition3(Fourmi ant, Place p2);
+/**
+ * Return true if the ant come back to the nest, the place p2 is empty and 
+ * the place p2 is closer to the nest than p1, otherwise false. 
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+bool condition4(Fourmi ant, Place p1, Place p2);
+/**
+ * Return true, if the ant is looking for sugar, the place p1 and p2 are on sugar trail, 
+ * the place p2 is empty and the place p1 is closer to the nest than p2. Otherwise, return false. 
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+bool condition5(Fourmi ant, Place p1, Place p2);
+/**
+ * Return true if the ant is looking for sugar, the place p2 is on sugar trail and is empty.
+ * Otherwise, return false. 
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+bool condition6(Fourmi ant, Place p1, Place p2);
+/**
+ * Return true, if the ant is looking for sugar and the place p2 is empty.
+ * Otherwise, return false. 
+ * @param ant The ant.
+ * @param p2 The place p2.
+*/
+bool condition7(Fourmi ant, Place p2);
+/**
+ * Return nth condition. 
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+bool condtionNth(int n, Fourmi ant, Place p1, Place p2);
 
-// Défition des actions.
-void action2(Fourmi &f, Place &p1, Place &p2);
+/**
+ * The ant carries a sugar and put down sugar pheromone on the place p1.
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+void action2(Fourmi &ant, Place &p1, Place &p2);
+/**
+ * The ant puts down its sugar.
+ * @param ant The ant.
+*/
 void action3(Fourmi &f);
+/**
+ * The ant moves to location p2. And drop the sugar pheromone in place p2.
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
 void action4(Fourmi &f, Place &p1, Place &p2);
-void action567(Fourmi &f, Place &p1, Place &p2);
-void action_n(int n, Fourmi &f, Place &p1, Place &p2);
+/**
+ * The ant moves from the place p1 to p2.
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+void actionMove(Fourmi &ant, Place &p1, Place &p2);
+/**
+ * Do nth action. 
+ * @param ant The ant.
+ * @param p1 The place p1.
+ * @param p2 The place p2.
+*/
+void actionNth(int n, Fourmi &ant, Place &p1, Place &p2);
 
 #endif

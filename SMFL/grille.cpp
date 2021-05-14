@@ -7,240 +7,261 @@
 #include "doctest.h"
 #include <vector>
 #include <iostream>
+#include <sstream>
 
-Grille::Grille(int const taille)
+Grille::Grille(int const size)
 {
-  for (int y = 0; y < taille; y++)
+  for (int y = 0; y < size; y++)
   {
-    m_grille.push_back(std::vector<Place>());
+    m_grid.push_back(std::vector<Place>());
 
-    for (int x = 0; x < taille; x++)
-    {
-      m_grille[y].push_back(Place(Coord(x, y)));
-    }
+    for (int x = 0; x < size; x++)
+      m_grid[y].push_back(Place(Coord(x, y)));
   }
 }
 
-std::ostream &operator<<(std::ostream &out, const Grille &g)
+Place Grille::getPlace(const Coord &coord) const
 {
-  out << "{";
-  for (int i = 0; i < g.m_grille.size(); i++)
-  {
-    for (int j = 0; j < g.m_grille.size(); j++)
-    {
-      out << g.m_grille[i][j];
-    }
-    out << std::endl;
-  }
-  out << "}";
-  return out;
-}
+  int coord_x = coord.getX();
+  int coord_y = coord.getY();
 
-Place Grille::chargePlace(const Coord c)
-{
-  int cX = c.getX();
-  int cY = c.getY();
-
-  if (cX >= 0 && cX < m_grille[0].size() && cY >= 0 && cY < m_grille.size())
-    return m_grille[cY][cX];
+  if (coord_x >= 0 && coord_x < m_grid[0].size() && coord_y >= 0 && coord_y < m_grid.size())
+    return m_grid[coord_y][coord_x];
 
   else
     throw std::runtime_error("La coordonnée est en dehors de la grille.");
 }
 
-void Grille::rangePlace(Place &p)
+void Grille::linearizePheroAntNest()
 {
-  m_grille[p.getCoord().getY()][p.getCoord().getX()] = p;
-}
+  bool is_stable = false;
 
-void Grille::linearisePheroNid()
-{
-  bool stable = false;
-
-  while (not stable)
+  while (not is_stable)
   {
-    stable = true;
-    for (int y = 0; y < taille(); y++)
-      for (int x = 0; x < taille(); x++)
+    is_stable = true;
+    for (int y = 0; y < getSize(); y++)
+      for (int x = 0; x < getSize(); x++)
       {
         Coord c = Coord(x, y);
-        Place p = chargePlace(c);
+        Place p = getPlace(c);
 
-        if (p.getPheroNid() < 1)
+        if (p.getPheroAntNest() < 1)
         {
-          EnsCoord coordVoisins = voisines(c);
+          EnsCoord coordVoisins = neighbors(c);
           double maxPhero = 0;
 
-          for (int posVois = 0; posVois < coordVoisins.taille(); posVois++)
+          for (int posVois = 0; posVois < coordVoisins.getSize(); posVois++)
           {
-            Place v = chargePlace(coordVoisins.ieme(posVois));
-            maxPhero = std::max(maxPhero, v.getPheroNid());
+            Place v = getPlace(coordVoisins.nth(posVois));
+            maxPhero = std::max(maxPhero, v.getPheroAntNest());
           }
 
-          maxPhero -= 1. / TAILLEGRILLE;
+          maxPhero -= 1. / GRID_SIZE;
 
-          if (maxPhero > p.getPheroNid())
+          if (maxPhero > p.getPheroAntNest())
           {
-            p.posePheroNid(maxPhero);
-            rangePlace(p);
-            stable = false;
+            p.putPheroAntNest(maxPhero);
+            setPlace(p);
+            is_stable = false;
           }
         }
       }
   }
 }
 
-void Grille::diminuePheroSucre()
+void Grille::decreasePheroSugar(int const quantity)
 {
-  for (int y = 0; y < taille(); y++)
-    for (int x = 0; x < taille(); x++)
+  for (int y = 0; y < getSize(); y++)
+    for (int x = 0; x < getSize(); x++)
     {
       Coord c = Coord(x, y);
-      Place p = chargePlace(c);
-      p.diminuerPheroSucre();
-      rangePlace(p);
+      Place p = getPlace(c);
+      p.decreasePheroSugar(quantity);
+      setPlace(p);
     }
 }
 
-Place Grille::randPlace()
+std::ostream &operator<<(std::ostream &out, const Grille &grid)
 {
-  return chargePlace(Coord(std::rand() % taille(), std::rand() % taille()));
+  out << "{";
+  for (int i = 0; i < grid.m_grid.size(); i++)
+  {
+    for (int j = 0; j < grid.m_grid.size(); j++)
+      out << grid.m_grid[i][j];
+
+    out << std::endl;
+  }
+  out << "}";
+  return out;
 }
 
-void placeNids(Grille &g, EnsCoord ens)
+void setSugars(Grille &grid, EnsCoord &set_sugars)
 {
-  for (int i = 0; i < ens.taille(); i++)
+  for (size_t i = 0; i < set_sugars.getSize(); i++)
   {
-    Place p = g.chargePlace(ens.ieme(i));
-    p.poseNid();
-    g.rangePlace(p);
+    Place place = grid.getPlace(set_sugars.nth(i));
+    place.putSugar();
+    grid.setPlace(place);
   }
 }
 
-void placeSucres(Grille &g, EnsCoord ens)
+void setAnts(Grille &grid, GrilleFourmis &ants, EnsCoord &set_ants)
 {
-  for (int i = 0; i < ens.taille(); i++)
+  for (size_t i = 0; i < set_ants.getSize(); i++)
   {
-    Place p = g.chargePlace(ens.ieme(i));
-    p.poseSucre();
-    g.rangePlace(p);
+    Coord coord = set_ants.nth(i);
+    Place place = grid.getPlace(coord);
+    Fourmi ant = Fourmi(coord, i);
+    ants.setAnt(ant);
+    place.putAnt(ant);
+    grid.setPlace(place);
   }
 }
 
-void placeFourmis(Grille &g, GrilleFourmis &lesFourmis, EnsCoord ens)
+void setAntsNests(Grille &grid, EnsCoord &set_nests)
 {
-  for (int i = 0; i < ens.taille(); i++)
+  for (size_t i = 0; i < set_nests.getSize(); i++)
   {
-    Coord c = ens.ieme(i);
-    Place p = g.chargePlace(c);
-    Fourmi f = Fourmi(c, i);
-    lesFourmis.rangeFourmi(f);
-    p.poseFourmi(f);
-    g.rangePlace(p);
+    Place place = grid.getPlace(set_nests.nth(i));
+    place.putAntNest();
+    grid.setPlace(place);
   }
 }
 
-void initialiseGrille(Grille &g, GrilleFourmis &lesFourmisGrille, EnsCoord lesNids, EnsCoord lesSucres, EnsCoord lesFourmis)
+void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int nb_ants)
 {
-  placeNids(g, lesNids);
-  placeSucres(g, lesSucres);
-  placeFourmis(g, lesFourmisGrille, lesFourmis);
-}
-
-void initialiserEmplacements(Grille &laGrille, GrilleFourmis &lesFourmisGrille)
-{
-  int n_sucre = 10;
-  int n_nid = 1;
-  int n_fourmi = 20;
-
-  EnsCoord ens;
-  EnsCoord ens_nid;
-  EnsCoord ens_nid_voisine;
-  EnsCoord ens_sucres;
-  EnsCoord ens_fourmi;
-  for (int i = 0; i < n_sucre; i++)
+  // Test if the initialization values are consistent.
+  if (nb_sugar + nb_ants + 4 > GRID_SIZE)
   {
-    Coord rand_coord = laGrille.randPlace().getCoord();
-    if (not ens.contient(rand_coord))
+    std::ostringstream msg_error;
+    msg_error << "Error Grid Initialization : The simulation cannot be performed because the number "
+              << "of sugar, ants and nests is larger than the size of the grid."
+              << "\nNumber of places for sugars: "
+              << nb_sugar
+              << "\nNumber of places for ants: "
+              << nb_ants
+              << "\nNumber of places for ants nested : 4";
+
+    throw std::invalid_argument(msg_error.str());
+  }
+
+  // The set containing all coordinates of already places taken.
+  EnsCoord set_places_taken;
+
+  // Create the random sugar set.
+  EnsCoord set_sugars;
+  while (set_sugars.getSize() < nb_sugar)
+  {
+    Coord rand_coord = grid.getRandPlace().getCoord();
+
+    if (not set_places_taken.isContained(rand_coord))
     {
-      ens.ajoute(rand_coord);
-      ens_sucres.ajoute(rand_coord);
+      set_places_taken.add(rand_coord);
+      set_sugars.add(rand_coord);
     }
   }
 
-  Coord rand_coord = laGrille.randPlace().getCoord();
-  if (not ens.contient(rand_coord))
-  {
-    ens.ajoute(rand_coord);
-    ens_nid.ajoute(rand_coord);
+  // Create the random ants set.
+  // Get a random coord in the grid, to put a nest.
+  EnsCoord set_nests;
+  Coord rand_coord = grid.getRandPlace().getCoord();
+  while (set_places_taken.isContained(rand_coord))
+    rand_coord = grid.getRandPlace().getCoord();
 
-    EnsCoord voisines_coord = voisines(rand_coord);
-    for (int i = 0; i < voisines_coord.taille(); i++)
-      ens_nid_voisine.ajoute(voisines_coord.ieme(i));
+  set_places_taken.add(rand_coord);
+  set_nests.add(rand_coord);
+
+  // Add 3 others nest near to the main ant nest.
+  EnsCoord set_nests_neighbors = neighbors(rand_coord);
+  set_nests_neighbors.shuffle();
+  for (size_t i = 0; i < set_nests_neighbors.getSize(); i++)
+  {
+    Coord place_nth = set_nests_neighbors.nth(i);
+    set_places_taken.add(place_nth);
+    set_nests.add(place_nth);
+
+    // A nest is composed of only 4 places.
+    if (set_nests.getSize() >= 4)
+      break;
   }
 
-  if (n_fourmi > ens_nid_voisine.taille())
-    n_fourmi = ens_nid_voisine.taille();
-
-  for (int i = 0; i < n_fourmi; i++)
+  // Create the random ants set.
+  EnsCoord set_ants;
+  while (set_ants.getSize() < nb_ants)
   {
-    Coord rand_coord = choixHasard(ens_nid_voisine);
-    ens_fourmi.ajoute(rand_coord);
-    ens_nid_voisine.supprime(rand_coord);
-  }
-
-  initialiseGrille(laGrille, lesFourmisGrille, ens_nid, ens_sucres, ens_fourmi);
-  laGrille.linearisePheroNid();
-}
-
-void mettreAJourUneFourmi(Fourmi &f, Grille &laGrille)
-{
-  Coord c = f.getCoord();
-  Place p1 = laGrille.chargePlace(c);
-  EnsCoord voisCoord = voisines(c);
-  voisCoord.melange();
-
-  for (int i = 0; i < voisCoord.taille(); i++)
-  {
-    Coord cv = voisCoord.ieme(i);
-    Place p2 = laGrille.chargePlace(cv);
-
-    for (int num_r = 2; num_r < 8; num_r++)
+    for (size_t i = 0; i < set_nests_neighbors.getSize(); i++)
     {
-      if (condtion_n(num_r, f, p1, p2))
+      Coord coord = set_nests_neighbors.nth(i);
+      if (not set_places_taken.isContained(coord))
       {
-        action_n(num_r, f, p1, p2);
-        laGrille.rangePlace(p1);
-        laGrille.rangePlace(p2);
+        set_places_taken.add(coord);
+        set_ants.add(coord);
+      }
+
+      // Change the set of neighbors because all places are already takes.
+      // While the set of ants is not yet complete.
+      if (set_ants.getSize() < nb_ants and i == set_nests_neighbors.getSize() - 1)
+        set_nests_neighbors = neighbors(randNth(set_nests_neighbors));
+    }
+  }
+
+  initializeGrid(grid, ants, set_sugars, set_ants, set_nests);
+  grid.linearizePheroAntNest();
+}
+
+void initializeGrid(Grille &grid, GrilleFourmis &ants, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests)
+{
+  setSugars(grid, set_sugars);
+  setAnts(grid, ants, set_ants);
+  setAntsNests(grid, set_nests);
+}
+
+void updateAnt(Fourmi &ant, Grille &grid)
+{
+  Coord coord = ant.getCoord();
+  Place p1 = grid.getPlace(coord);
+  EnsCoord set_neighbors = neighbors(coord);
+
+  set_neighbors.shuffle();
+
+  for (int nb_rule = 2; nb_rule < 8; nb_rule++)
+    for (size_t i = 0; i < set_neighbors.getSize(); i++)
+    {
+      Coord coord_neighbour = set_neighbors.nth(i);
+      Place p2 = grid.getPlace(coord_neighbour);
+      if (condtionNth(nb_rule, ant, p1, p2))
+      {
+        actionNth(nb_rule, ant, p1, p2);
+        grid.setPlace(p1);
+        grid.setPlace(p2);
         return;
       }
     }
-  }
 }
 
-void mettreAJourEnsFourmis(Grille &laGrille, GrilleFourmis &lesFourmis)
+void updateSetAnts(Grille &grid, GrilleFourmis &ants)
 {
-  for (int i = 0; i < lesFourmis.taille(); i++)
-    mettreAJourUneFourmi(lesFourmis.m_grilleF[i], laGrille);
+  for (size_t i = 0; i < ants.getSize(); i++)
+    updateAnt(ants.m_grid[i], grid);
 }
 
 TEST_SUITE_BEGIN("Test de la classe Grille.");
-TEST_CASE("Test de la fonction chargePlace.")
+TEST_CASE("Test de la fonction getPlace.")
 {
-  CHECK(Grille(1).chargePlace(Coord(0, 0)) == Place(Coord(0, 0)));
-  CHECK(Grille(5).chargePlace(Coord(4, 4)) == Place(Coord(4, 4)));
-  CHECK_THROWS_AS(Grille(5).chargePlace(Coord(5, 4)), std::runtime_error);
-  CHECK_THROWS_AS(Grille(5).chargePlace(Coord(4, 5)), std::runtime_error);
+  CHECK(Grille(1).getPlace(Coord(0, 0)) == Place(Coord(0, 0)));
+  CHECK(Grille(5).getPlace(Coord(4, 4)) == Place(Coord(4, 4)));
+  CHECK_THROWS_AS(Grille(5).getPlace(Coord(5, 4)), std::runtime_error);
+  CHECK_THROWS_AS(Grille(5).getPlace(Coord(4, 5)), std::runtime_error);
 }
 
-TEST_CASE("Test de la fonction chargePlace.")
+TEST_CASE("Test de la fonction getPlace.")
 {
   Grille g = Grille(2);
   Coord c = Coord(1, 0);
-  Place p = g.chargePlace(c);
-  p.poseSucre();
-  g.rangePlace(p);
+  Place p = g.getPlace(c);
+  p.putSugar();
+  g.setPlace(p);
 
-  CHECK(g.chargePlace(c) == p);
+  CHECK(g.getPlace(c) == p);
 }
 TEST_SUITE_END();

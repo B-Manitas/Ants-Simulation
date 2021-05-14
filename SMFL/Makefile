@@ -13,11 +13,11 @@ all: main clean
 	./main
 
 
-main.o: main.hpp coord.hpp fourmi.hpp place.hpp grille.hpp grilleFourmis.hpp action.hpp
+main.o: main.hpp coord.hpp fourmi.hpp place.hpp action.hpp grille.hpp grilleFourmis.hpp
 	g++ -Wall -std=c++11 -Isrc/include -c main.cpp
 
-main: main.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
-	g++ -Wall -std=c++11 -o main main.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o $(LIBS)
+main: main.o coord.o fourmi.o place.o action.o grille.o grilleFourmis.o
+	g++ -Wall -std=c++11 -o main main.o coord.o fourmi.o place.o action.o grille.o grilleFourmis.o $(LIBS)
 
 clean:
 	$(RM) *.o

@@ -3,78 +3,58 @@
 #include "coord.hpp"
 #include "doctest.h"
 
-// GrilleFourmis::GrilleFourmis(int taille) : m_grilleF{std::vector<Fourmi>(Fourmi(Coord(), -1), taille)} {}
-
-bool GrilleFourmis::contientFourmis(int idFourmi)
+int GrilleFourmis::position(int const id)
 {
-  for (auto &f : m_grilleF)
-    if (f.getNum() == idFourmi)
-      return true;
-
-  return false;
-}
-
-bool GrilleFourmis::contientFourmisCoord(Coord c)
-{
-  for (auto &f : m_grilleF)
-    if (f.getCoord() == c)
-      return true;
-
-  return false;
-}
-
-// void GrilleFourmis::supprime(Coord c)
-// {
-//   if (contientFourmisCoord(c))
-//     m_grilleF.erase(m_grilleF.begin() + position(c));
-
-//   else
-//     throw std::runtime_error("La coordonnée n'a pas pu être supprimée.");
-// }
-
-int GrilleFourmis::position(int const &idFourmi)
-{
-  for (int i = 0; i < taille(); i++)
-    if (m_grilleF[i].getNum() == idFourmi)
+  for (int i = 0; i < getSize(); i++)
+    if (m_grid[i].getIndex() == id)
       return i;
 
   return -1;
 }
 
-Fourmi GrilleFourmis::chargeFourmi(Coord c)
+bool GrilleFourmis::isContainingAnts(int const id) const
 {
-  for (auto &f : m_grilleF)
-    if (f.getCoord() == c)
-      return f;
+  for (auto &ant : m_grid)
+    if (ant.getIndex() == id)
+      return true;
+
+  return false;
+}
+
+bool GrilleFourmis::isContainingAntsCoord(Coord const &coord) const
+{
+  for (auto &ant : m_grid)
+    if (ant.getCoord() == coord)
+      return true;
+
+  return false;
+}
+
+Fourmi GrilleFourmis::getAnt(Coord const &coord) const
+{
+  for (auto &ant : m_grid)
+    if (ant.getCoord() == coord)
+      return ant;
 
   throw std::runtime_error("Aucune fourmi n'a été trouvé.");
 }
 
-void GrilleFourmis::rangeFourmi(Fourmi &fourmi)
+void GrilleFourmis::setAnt(Fourmi const &ant)
 {
-  if (not contientFourmis(fourmi.getNum()))
-    m_grilleF.push_back(fourmi);
+  if (not isContainingAnts(ant.getIndex()))
+    m_grid.push_back(ant);
 
   else
-    m_grilleF[position(fourmi.getNum())] = fourmi;
+    m_grid[position(ant.getIndex())] = ant;
 }
 
-Fourmi GrilleFourmis::chercheFourmi(int idFourmi)
-{
-  for (int i = 0; i < taille(); i++)
-    if (m_grilleF[i].getNum() == idFourmi)
-      return m_grilleF[i];
-
-  throw std::runtime_error("Aucune fourmis n'a été trouvé avec ce numéro.");
-}
-
-std::ostream &operator<<(std::ostream &out, GrilleFourmis &grille)
+std::ostream &operator<<(std::ostream &out, GrilleFourmis const &ants)
 {
   out << "{";
-  for (int i = 0; i < grille.taille(); i++)
+  for (int i = 0; i < ants.getSize(); i++)
   {
-    out << grille.m_grilleF[i];
-    if (i != grille.taille() - 1)
+    out << ants.m_grid[i];
+    if (i != ants.getSize() - 1)
       out << ", ";
   }
   out << "}";
@@ -88,10 +68,9 @@ TEST_CASE("Test des méthodes de la classe GrilleFourmis.")
   Fourmi f = Fourmi(Coord(0, 0), 1);
   Fourmi f2 = Fourmi(Coord(1, 0), 2);
   GrilleFourmis g = GrilleFourmis();
-  g.rangeFourmi(f);
-  g.rangeFourmi(f2);
-  CHECK(g.chargeFourmi(f.getCoord()).getNum() == f.getNum());
-  CHECK(g.chercheFourmi(1).getNum() == f.getNum());
-  CHECK(g.taille() == 2);
+  g.setAnt(f);
+  g.setAnt(f2);
+  CHECK(g.getAnt(f.getCoord()).getIndex() == f.getIndex());
+  CHECK(g.getSize() == 2);
 }
 TEST_SUITE_END();
