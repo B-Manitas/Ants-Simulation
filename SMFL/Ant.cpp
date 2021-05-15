@@ -1,9 +1,9 @@
 #include "Ant.hpp"
 #include "Coord.hpp"
-#include "doctest.h"
+
 #include <sstream>
 
-Fourmi::Fourmi(Coord c, int index) : m_coord{c}, m_id{index}, m_isCarryingSugar{false}
+Ant::Ant(Coord c, int index) : m_coord{c}, m_id{index}, m_isCarryingSugar{false}
 {
   if (m_id < 0 and m_id != -1)
   {
@@ -16,7 +16,7 @@ Fourmi::Fourmi(Coord c, int index) : m_coord{c}, m_id{index}, m_isCarryingSugar{
   }
 }
 
-std::ostream &operator<<(std::ostream &out, const Fourmi &ant)
+std::ostream &operator<<(std::ostream &out, const Ant &ant)
 {
   out << "{ Coord: " << ant.getCoord()
       << ", Id: " << ant.getIndex()

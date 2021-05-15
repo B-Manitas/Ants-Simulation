@@ -1,5 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT
-#include "doctest.h"
+#include "Action.hpp"
+#include "Ant.hpp"
+#include "Coord.hpp"
+#include "Grid.hpp"
+#include "GridAnts.hpp"
+#include "Place.hpp"
+#include "Doctest.h"
 
 int main(int argc, const char **argv)
 {

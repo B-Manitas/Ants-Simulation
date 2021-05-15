@@ -1,26 +1,22 @@
-#define DOCTEST_CONFIG_IMPLEMENT
-#include "doctest.h"
-
-#include "Main.hpp"
+#include "Ant.hpp"
 #include "Coord.hpp"
-#include "Place.hpp"
 #include "Grid.hpp"
 #include "GridAnts.hpp"
+#include "Place.hpp"
 
+#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <iostream>
-#include <vector>
 #include <SFML/Graphics.hpp>
+#include <vector>
 
-enum class state_boxes
+enum class place_state
 {
-  fourmi,
-  fourmi_sucre,
-  nid,
-  sucre,
-  pheroSucre,
-  vide
+  ant,
+  nest,
+  sugar,
+  phero_sugar,
+  empty
 };
 
 /**
@@ -29,7 +25,7 @@ enum class state_boxes
  * @param grid The grid containing all the simulation squares.
  * @param ants The grid containing all the ants in the simulation.
 */
-void consistencyTest(Grille &grid, GrilleFourmis &ants, std::string title)
+void consistencyTest(Grid &grid, GridAnts &ants, std::string title)
 {
   std::ostringstream error_msg;
 
@@ -50,8 +46,8 @@ void consistencyTest(Grille &grid, GrilleFourmis &ants, std::string title)
   }
 
   // Take the second test. Test if the square has a ghost ant.
-  for (int y = 0; y < grid.getSize(); y++)
-    for (int x = 0; x < grid.getSize(); x++)
+  for (size_t y = 0; y < grid.getSize(); y++)
+    for (size_t x = 0; x < grid.getSize(); x++)
     {
       Place square = grid.getPlace(Coord(x, y));
 
@@ -73,66 +69,61 @@ void consistencyTest(Grille &grid, GrilleFourmis &ants, std::string title)
  * @param ants The grid containing all the ants in the simulation.
  * @return Returns a 2D vector of integer corresponding to the state of the square.
 */
-std::vector<std::vector<int>> getGridState(Grille &grid, GrilleFourmis &ants)
+std::vector<std::vector<int>> getGridState(Grid &grid, GridAnts &ants)
 {
   std::vector<std::vector<int>> color_grid(GRID_SIZE);
 
-  for (int y = 0; y < grid.getSize(); y++)
-    for (int x = 0; x < grid.getSize(); x++)
+  for (size_t y = 0; y < grid.getSize(); y++)
+    for (size_t x = 0; x < grid.getSize(); x++)
     {
       Coord square_coord = Coord(x, y);
       Place square = grid.getPlace(square_coord);
-      Fourmi ant = Fourmi();
+      Ant ant = Ant();
 
       if (ants.isContainingAntsCoord(square_coord))
         ant = ants.getAnt(square_coord);
 
       // Square containing an ant nest.
       if (square.isContainingAntNest())
-        color_grid[y].push_back(int(state_boxes::nid));
+        color_grid[y].push_back(int(place_state::nest));
 
       // Square containing some sugars.
       else if (square.isContainingSugar())
-        color_grid[y].push_back(int(state_boxes::sucre));
+        color_grid[y].push_back(int(place_state::sugar));
 
       // Square containing an ant.
       else if (square.isContainingAnt())
-        color_grid[y].push_back(int(state_boxes::fourmi));
+        color_grid[y].push_back(int(place_state::ant));
 
       // Square containing sugar pheromone.
       else if (square.isContainingPheroSugar())
-        color_grid[y].push_back(int(state_boxes::pheroSucre));
+        color_grid[y].push_back(int(place_state::phero_sugar));
 
       // The square is empty.
       else
-        color_grid[y].push_back(int(state_boxes::vide));
+        color_grid[y].push_back(int(place_state::empty));
     }
 
   return color_grid;
 }
 
-int main(int argc, const char **argv)
+int main()
 {
   srand((unsigned)time(NULL));
-
-  // Docstest infrastructure.
-  doctest::Context context(argc, argv);
-  int test_result = context.run();
-  if (context.shouldExit())
-    return test_result;
 
   // Variables declaration.
   const int SQUARE_SIZE = 10;
   const int INTERVAL_TIME = 5;
   int iteration = 0;
   int time = 100;
-  bool is_pputing = false;
+  bool is_playing = false;
 
   // Creation of grids
-  Grille grid = Grille(GRID_SIZE);
-  GrilleFourmis ants;
+  Grid grid = Grid(GRID_SIZE);
+  GridAnts ants;
+  EnsCoord set_nests;
 
-  initializeRandomPlaces(grid, ants);
+  initializeRandomPlaces(grid, ants, set_nests);
   consistencyTest(grid, ants, "Grid Initialization");
   std::vector<std::vector<int>> grid_state = getGridState(grid, ants);
 
@@ -143,7 +134,7 @@ int main(int argc, const char **argv)
 
   // Create the texts.
   sf::Font font;
-  if (!font.loadFromFile("asset/arial.ttf"))
+  if (!font.loadFromFile("./asset/arial.ttf"))
     std::cout << "Warning Font: Failed to load the font." << std::endl;
 
   sf::Text txt_pause;
@@ -164,55 +155,114 @@ int main(int argc, const char **argv)
 
   while (window.isOpen())
   {
-    sf::Event w_event;
+    sf::Event app_event;
 
-    while (window.pollEvent(w_event))
+    while (window.pollEvent(app_event))
     {
-      switch (w_event.type)
+      switch (app_event.type)
       {
       // Closed window.
       case sf::Event::Closed:
         window.close();
+        std::cout << "Iteration: " << iteration << std::endl;
         std::cout << "Stop the simulation." << std::endl;
         break;
 
       // Shortcut keyboard.
       case sf::Event::KeyPressed:
-        if (w_event.key.code == sf::Keyboard::Space)
-          is_pputing = !is_pputing;
+        if (app_event.key.code == sf::Keyboard::Space)
+          is_playing = !is_playing;
 
         // Increase the speed time.
-        else if (w_event.key.code == sf::Keyboard::Left)
+        else if (app_event.key.code == sf::Keyboard::Left)
         {
           time = std::max(time + INTERVAL_TIME, 0);
           std::cout << "Time: " << time << std::endl;
         }
 
         // Decrease the speed time.
-        else if (w_event.key.code == sf::Keyboard::Right)
+        else if (app_event.key.code == sf::Keyboard::Right)
         {
           time = std::min(time - INTERVAL_TIME, 1000);
           std::cout << "Time: " << time << std::endl;
         }
 
         // Stop the simulation.
-        else if (w_event.key.code == sf::Keyboard::Q)
+        else if (app_event.key.code == sf::Keyboard::Q)
         {
           window.close();
+          std::cout << "Iteration: " << iteration << std::endl;
           std::cout << "Stop the simulation." << std::endl;
         }
 
         // Reset the simulation.
-        else if (w_event.key.code == sf::Keyboard::R and not is_pputing)
+        else if (app_event.key.code == sf::Keyboard::R and not is_playing)
         {
-          grid = Grille(GRID_SIZE);
-          ants = GrilleFourmis();
-          initializeRandomPlaces(grid, ants);
+          grid = Grid(GRID_SIZE);
+          ants = GridAnts();
+          set_nests = EnsCoord();
+          initializeRandomPlaces(grid, ants, set_nests);
           consistencyTest(grid, ants, "Grid Initialization after Reset");
           grid_state = getGridState(grid, ants);
           iteration = 0;
           std::cout << "The simulation is reset." << std::endl;
         }
+        break;
+
+      case sf::Event::MouseButtonPressed:
+        if (not is_playing && app_event.mouseButton.button == sf::Mouse::Left)
+        {
+          int x = double(app_event.mouseButton.x) / SQUARE_SIZE;
+          int y = double(app_event.mouseButton.y) / SQUARE_SIZE;
+
+          if (y > 0 and x > 0 and y < GRID_SIZE and x < GRID_SIZE)
+          {
+            Place place_clicked = grid.getPlace(Coord(x, y));
+
+            Ant ant_clicked = place_clicked.isContainingAnt() ? ants.getAnt(Coord(x, y)) : Ant(Coord(x, y), ants.getNewIndex());
+            if (place_clicked.isContainingAnt() && ants.isContainingAntsCoord(Coord(x, y)))
+            {
+              ants.remove(ant_clicked);
+              place_clicked.removeAnt();
+              grid_state[y][x] = int(place_state::empty);
+            }
+
+            else if (place_clicked.isEmpty() and place_clicked.putAnt(ant_clicked))
+            {
+              ants.setAnt(ant_clicked);
+              grid_state[y][x] = int(place_state::ant);
+            }
+
+            grid.setPlace(place_clicked);
+          }
+        }
+
+        else if (not is_playing && app_event.mouseButton.button == sf::Mouse::Right)
+        {
+          int x = double(app_event.mouseButton.x) / SQUARE_SIZE;
+          int y = double(app_event.mouseButton.y) / SQUARE_SIZE;
+
+          if (y > 0 and x > 0 and y < GRID_SIZE and x < GRID_SIZE)
+          {
+            Place place_clicked = grid.getPlace(Coord(x, y));
+
+            if (place_clicked.isContainingSugar())
+            {
+              place_clicked.removeSugar();
+              place_clicked.removePheroSugar();
+              grid_state[y][x] = int(place_state::empty);
+              grid.setPlace(place_clicked);
+            }
+
+            else if (place_clicked.isEmpty())
+            {
+              place_clicked.putSugar();
+              grid_state[y][x] = int(place_state::sugar);
+              grid.setPlace(place_clicked);
+            }
+          }
+        }
+        break;
 
       default:
         break;
@@ -234,19 +284,19 @@ int main(int argc, const char **argv)
         // Colorize each square according to its state.
         switch (grid_state[y][x])
         {
-        case int(state_boxes::fourmi):
+        case int(place_state::ant):
           color_rect = sf::Color::Yellow;
           break;
 
-        case int(state_boxes::nid):
+        case int(place_state::nest):
           color_rect = sf::Color(155, 155, 155);
           break;
 
-        case int(state_boxes::sucre):
+        case int(place_state::sugar):
           color_rect = sf::Color::White;
           break;
 
-        case int(state_boxes::pheroSucre):
+        case int(place_state::phero_sugar):
           color_rect = sf::Color(square.getPheroSugar(), square.getPheroSugar(), 0);
           break;
 
@@ -260,13 +310,25 @@ int main(int argc, const char **argv)
       }
 
     // Update the next grid of the simulation.
-    if (is_pputing)
+    if (is_playing)
     {
+      // Add a sugar every 100 iterations.
+      if (iteration % 100 == 0)
+      {
+        Place rand_sugar_place = grid.getRandEmptyPlace();
+
+        if (rand_sugar_place.putSugar())
+        {
+          grid.setPlace(rand_sugar_place);
+          std::cout << "A new pile of sugar appears." << std::endl;
+        }
+      }
+
       updateSetAnts(grid, ants);
       consistencyTest(grid, ants, "Simulation " + std::to_string(iteration));
       grid.decreasePheroSugar(3);
       grid_state = getGridState(grid, ants);
-
+      evolution(grid, ants, set_nests, 20, 10);
       txt_pause.setString("Space to pause.");
     }
     else

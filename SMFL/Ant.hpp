@@ -1,8 +1,9 @@
-#ifndef Fourmi_HPP
-#define Fourmi_HPP
+#ifndef Ant_HPP
+#define Ant_HPP
+
 #include "Coord.hpp"
 
-class Fourmi
+class Ant
 {
 private:
   Coord m_coord;
@@ -10,8 +11,8 @@ private:
   bool m_isCarryingSugar;
 
 public:
-  Fourmi() : m_coord{Coord()}, m_id{-1}, m_isCarryingSugar{false} {};
-  Fourmi(Coord c, int index);
+  Ant() : m_coord{Coord()}, m_id{-1}, m_isCarryingSugar{false} {};
+  Ant(Coord c, int index);
 
   /**Return the coordinate of the ant.*/
   Coord getCoord() const { return m_coord; };
@@ -30,9 +31,9 @@ public:
    */
   void move(Coord const &coord) { m_coord = coord; };
 
-  bool operator==(const Fourmi &ant) const { return ant.getCoord() == m_coord && ant.getIndex() == m_id; };
-  bool operator!=(const Fourmi &ant) const { return not(*this == ant); };
-  friend std::ostream &operator<<(std::ostream &out, const Fourmi &ant);
+  bool operator==(const Ant &ant) const { return ant.getCoord() == m_coord && ant.getIndex() == m_id; };
+  bool operator!=(const Ant &ant) const { return not(*this == ant); };
+  friend std::ostream &operator<<(std::ostream &out, const Ant &ant);
 };
 
 #endif

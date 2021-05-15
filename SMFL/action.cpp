@@ -1,16 +1,15 @@
 #include "Action.hpp"
 #include "Ant.hpp"
 #include "Place.hpp"
-#include "doctest.h"
 
-bool condition1(Fourmi ant, Place p2) { return p2.isContainingAnt(); };
-bool condition2(Fourmi ant, Place p2) { return ant.lookForSugar() && p2.isContainingSugar(); };
-bool condition3(Fourmi ant, Place p2) { return not ant.lookForSugar() && p2.isContainingAntNest(); };
-bool condition4(Fourmi ant, Place p1, Place p2) { return not ant.lookForSugar() && p2.isEmpty() && isCloserToNest(p2, p1); };
-bool condition5(Fourmi ant, Place p1, Place p2) { return ant.lookForSugar() && p1.isOnSugarTrail() && p2.isEmpty() && not isCloserToNest(p2, p1) && p2.isOnSugarTrail(); };
-bool condition6(Fourmi ant, Place p1, Place p2) { return ant.lookForSugar() && p2.isOnSugarTrail() && p2.isEmpty(); };
-bool condition7(Fourmi ant, Place p2) { return ant.lookForSugar() && p2.isEmpty(); };
-bool condtionNth(int n, Fourmi ant, Place p1, Place p2)
+bool condition1(Ant ant, Place p2) { return p2.isContainingAnt(); };
+bool condition2(Ant ant, Place p2) { return ant.lookForSugar() && p2.isContainingSugar(); };
+bool condition3(Ant ant, Place p2) { return not ant.lookForSugar() && p2.isContainingAntNest(); };
+bool condition4(Ant ant, Place p1, Place p2) { return not ant.lookForSugar() && p2.isEmpty() && isCloserToNest(p2, p1); };
+bool condition5(Ant ant, Place p1, Place p2) { return ant.lookForSugar() && p1.isOnSugarTrail() && p2.isEmpty() && not isCloserToNest(p2, p1) && p2.isOnSugarTrail(); };
+bool condition6(Ant ant, Place p1, Place p2) { return ant.lookForSugar() && p2.isOnSugarTrail() && p2.isEmpty(); };
+bool condition7(Ant ant, Place p2) { return ant.lookForSugar() && p2.isEmpty(); };
+bool condtionNth(int n, Ant ant, Place p1, Place p2)
 {
   switch (n)
   {
@@ -33,30 +32,33 @@ bool condtionNth(int n, Fourmi ant, Place p1, Place p2)
   }
 }
 
-void action2(Fourmi &ant, Place &p1, Place &p2)
+void action2(Ant &ant, Place &p1, Place &p2)
 {
   ant.carrySugar();
   p2.removeSugar(1);
   p1.putPheroSugar();
 }
 
-void action3(Fourmi &ant)
+void action3(Ant &ant, Place &p2)
 {
   ant.putSugar();
+  p2.storeFood();
 }
 
-void action4(Fourmi &ant, Place &p1, Place &p2)
+void action4(Ant &ant, Place &p1, Place &p2)
 {
   moveAnt(ant, p1, p2);
   p2.putPheroSugar();
 }
 
-void actionMove(Fourmi &ant, Place &p1, Place &p2)
+void actionMove(Ant &ant, Place &p1, Place &p2)
 {
+  if (p1 == p2)
+    std::cout << p1 << std::endl;
   moveAnt(ant, p1, p2);
 }
 
-void actionNth(int n, Fourmi &ant, Place &p1, Place &p2)
+void actionNth(int n, Ant &ant, Place &p1, Place &p2)
 {
   switch (n)
   {
@@ -67,7 +69,7 @@ void actionNth(int n, Fourmi &ant, Place &p1, Place &p2)
     break;
 
   case 3:
-    action3(ant);
+    action3(ant, p2);
     break;
 
   case 4:
@@ -75,7 +77,13 @@ void actionNth(int n, Fourmi &ant, Place &p1, Place &p2)
     break;
 
   case 5:
+    actionMove(ant, p1, p2);
+    break;
+
   case 6:
+    actionMove(ant, p1, p2);
+    break;
+
   case 7:
     actionMove(ant, p1, p2);
     break;
@@ -84,54 +92,3 @@ void actionNth(int n, Fourmi &ant, Place &p1, Place &p2)
     break;
   }
 }
-
-TEST_SUITE_BEGIN("Test de la classe Action");
-TEST_CASE("Test de la méthode action2")
-{
-  Coord c = Coord(0, 0);
-  Fourmi f = Fourmi(c, 0);
-  Place p1 = Place(c);
-  Place p2 = Place(c);
-
-  p2.putSugar();
-  action2(f, p1, p2);
-
-  CHECK_FALSE(f.lookForSugar());
-  CHECK(p1.isContainingPheroSugar());
-}
-
-TEST_CASE("Test de la méthode action3")
-{
-  Fourmi f = Fourmi(Coord(0, 0), 0);
-  action3(f);
-  CHECK(f.lookForSugar());
-}
-
-TEST_CASE("Test de la méthode action4")
-{
-  Coord c = Coord(0, 0);
-  Fourmi f = Fourmi(c, 0);
-  Place p1 = Place(c);
-  Place p2 = Place(Coord(1, 0));
-  p1.putSugar();
-
-  action4(f, p1, p2);
-  CHECK_FALSE(p1.isContainingAnt());
-  CHECK(p2.isContainingAnt());
-  CHECK(p2.isContainingPheroSugar());
-  CHECK(p2.getIdAnt() == f.getIndex());
-}
-
-TEST_CASE("Test de la méthode actionMove")
-{
-  Coord c = Coord(0, 0);
-  Fourmi f = Fourmi(c, 0);
-  Place p1 = Place(c);
-  Place p2 = Place(Coord(1, 0));
-
-  actionMove(f, p1, p2);
-  CHECK_FALSE(p1.isContainingAnt());
-  CHECK(p2.isContainingAnt());
-  CHECK(p2.getIdAnt() == f.getIndex());
-}
-TEST_SUITE_END();

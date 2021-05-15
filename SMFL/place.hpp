@@ -1,8 +1,9 @@
 #ifndef PLACE_H
 #define PLACE_H
 
-#include "Coord.hpp"
 #include "Ant.hpp"
+#include "Coord.hpp"
+
 #include <iostream>
 
 class Place
@@ -10,33 +11,51 @@ class Place
 private:
   Coord m_coord;
   int m_idAnt;
+  int m_food_reserve;
   int m_pieceSugar;
   int m_pieceAntNest;
   int m_pheroSugar;
   double m_pheroAntNest;
+  bool m_is_ghost;
 
 public:
   Place() : m_coord{Coord()}, m_idAnt{-1},
+            m_food_reserve{0},
             m_pieceSugar{0}, m_pieceAntNest{0},
-            m_pheroSugar{0}, m_pheroAntNest{0} {};
+            m_pheroSugar{0}, m_pheroAntNest{0},
+            m_is_ghost{false} {};
 
   Place(Coord coord) : m_coord{coord}, m_idAnt{-1},
+                       m_food_reserve{0},
                        m_pieceSugar{0}, m_pieceAntNest{0},
-                       m_pheroSugar{0}, m_pheroAntNest{0} {};
+                       m_pheroSugar{0}, m_pheroAntNest{0},
+                       m_is_ghost{false} {};
+
+  Place(bool is_ghost) : m_coord{Coord()}, m_idAnt{-1},
+                         m_food_reserve{0},
+                         m_pieceSugar{0}, m_pieceAntNest{0},
+                         m_pheroSugar{0}, m_pheroAntNest{0},
+                         m_is_ghost{is_ghost} {};
 
   /**Get the coordinate of the place.*/
   Coord getCoord() const { return m_coord; };
+  /**Get the ant index of the place.*/
+  int getIdAnt() const { return m_idAnt; };
+  /**Get the food reserve of the place.*/
+  int getFoodReserve() const { return m_food_reserve; }
   /**Get the value of sugar pheromones at the place.*/
   double getPheroSugar() const { return m_pheroSugar; };
   /**Get the value of ant nest pheromones at the place.*/
   double getPheroAntNest() const { return m_pheroAntNest; };
-  /**Get the ant index of the place.*/
-  int getIdAnt() const { return m_idAnt; };
   /**Get the number of sugar cubes from the place.*/
   int getPieceSugar() const { return m_pieceSugar; };
   /**Get the number of ant nest pieces from the place.*/
   int getPieceAntNest() const { return m_pieceAntNest; };
 
+  /**Return if the place is a ghost place.*/
+  bool isGhost() const { return m_is_ghost; };
+  /**Returns true if the place a food, otherwise false.*/
+  bool isContainingFood() const { return m_food_reserve > 0; };
   /**Returns true if the place contains sugar, otherwise false.*/
   bool isContainingSugar() const { return m_pieceSugar > 0; };
   /**Returns true if the place contains an ant nest, otherwise false.*/
@@ -46,10 +65,14 @@ public:
   /**Returns true if the place contains a sugar pheromone, otherwise false.*/
   bool isContainingPheroSugar() const { return m_pheroSugar > 0; }
   /**Returns true if the place is empty, otherwise false.*/
-  bool isEmpty() const { return not(isContainingSugar() && isContainingAntNest() && isContainingAnt()); }
+  bool isEmpty() const { return not isContainingSugar() && not isContainingAntNest() && not isContainingAnt(); }
   /**Returns true if the place is on sugar trail, otherwise false.*/
   bool isOnSugarTrail() const { return m_pheroSugar > 0; };
 
+  /**Store a food if the place is a nested.*/
+  bool storeFood();
+  /**A food is eaten.*/
+  void consumeFood() { m_food_reserve = std::max(m_food_reserve - 1, 0); };
   /**
    * Put sugar on the place.
    * @param quantity The quantity of sugar. By default, the quantity is 5.
@@ -61,7 +84,7 @@ public:
    * @param ant The ant.
    * @return Return true if the ant has been putted, otherwise false.
   */
-  bool putAnt(Fourmi ant);
+  bool putAnt(Ant ant);
   /**
    * Put an ant nest on the place.
    * @return Return true if the ant nest has been putted, otherwise false.
@@ -114,6 +137,6 @@ bool isCloserToNest(Place p1, Place p2);
  * @param p1 The current place of the ant.
  * @param p2 The place where the ant will be moved.
  */
-void moveAnt(Fourmi &ant, Place &p1, Place &p2);
+void moveAnt(Ant &ant, Place &p1, Place &p2);
 
 #endif

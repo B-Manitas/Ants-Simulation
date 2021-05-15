@@ -1,45 +1,32 @@
-#include "GridAnts.hpp"
 #include "Ant.hpp"
 #include "Coord.hpp"
-#include "doctest.h"
+#include "GridAnts.hpp"
 
-int GrilleFourmis::position(int const id)
+#include <sstream>
+
+int GridAnts::position(int const index) const
 {
-  for (int i = 0; i < getSize(); i++)
-    if (m_grid[i].getIndex() == id)
+  for (size_t i = 0; i < getSize(); i++)
+    if (m_grid[i].getIndex() == index)
       return i;
 
   return -1;
 }
 
-bool GrilleFourmis::isContainingAnts(int const id) const
-{
-  for (auto &ant : m_grid)
-    if (ant.getIndex() == id)
-      return true;
-
-  return false;
-}
-
-bool GrilleFourmis::isContainingAntsCoord(Coord const &coord) const
-{
-  for (auto &ant : m_grid)
-    if (ant.getCoord() == coord)
-      return true;
-
-  return false;
-}
-
-Fourmi GrilleFourmis::getAnt(Coord const &coord) const
+Ant GridAnts::getAnt(Coord const &coord) const
 {
   for (auto &ant : m_grid)
     if (ant.getCoord() == coord)
       return ant;
 
-  throw std::runtime_error("Aucune fourmi n'a été trouvé.");
+  std::ostringstream msg_error;
+  msg_error << "Error getAnt GridAnts : There is no ant with the coordinate "
+            << coord
+            << " in the grid.";
+  throw std::invalid_argument(msg_error.str());
 }
 
-void GrilleFourmis::setAnt(Fourmi const &ant)
+void GridAnts::setAnt(Ant const &ant)
 {
   if (not isContainingAnts(ant.getIndex()))
     m_grid.push_back(ant);
@@ -48,10 +35,40 @@ void GrilleFourmis::setAnt(Fourmi const &ant)
     m_grid[position(ant.getIndex())] = ant;
 }
 
-std::ostream &operator<<(std::ostream &out, GrilleFourmis const &ants)
+bool GridAnts::isContainingAnts(int const index) const
+{
+  for (auto &ant : m_grid)
+    if (ant.getIndex() == index)
+      return true;
+
+  return false;
+}
+
+bool GridAnts::isContainingAntsCoord(Coord const &coord) const
+{
+  for (auto &ant : m_grid)
+    if (ant.getCoord() == coord)
+      return true;
+
+  return false;
+}
+
+void GridAnts::remove(Ant const &ant)
+{
+  if (isContainingAntsCoord(ant.getCoord()))
+    m_grid.erase(m_grid.begin() + position(ant.getIndex()));
+}
+
+int GridAnts::getNewIndex()
+{
+  m_index++;
+  return m_index;
+}
+
+std::ostream &operator<<(std::ostream &out, GridAnts const &ants)
 {
   out << "{";
-  for (int i = 0; i < ants.getSize(); i++)
+  for (size_t i = 0; i < ants.getSize(); i++)
   {
     out << ants.m_grid[i];
     if (i != ants.getSize() - 1)
@@ -61,16 +78,3 @@ std::ostream &operator<<(std::ostream &out, GrilleFourmis const &ants)
 
   return out;
 }
-
-TEST_SUITE_BEGIN("Test de la classe GrilleFourmis.");
-TEST_CASE("Test des méthodes de la classe GrilleFourmis.")
-{
-  Fourmi f = Fourmi(Coord(0, 0), 1);
-  Fourmi f2 = Fourmi(Coord(1, 0), 2);
-  GrilleFourmis g = GrilleFourmis();
-  g.setAnt(f);
-  g.setAnt(f2);
-  CHECK(g.getAnt(f.getCoord()).getIndex() == f.getIndex());
-  CHECK(g.getSize() == 2);
-}
-TEST_SUITE_END();

@@ -1,6 +1,10 @@
 {
   "files.associations": {
+    "thread": "cpp",
     "iosfwd": "cpp",
+    "stdexcept": "cpp",
+    "iostream": "cpp",
+    "ostream": "cpp",
     "array": "cpp",
     "atomic": "cpp",
     "*.tcc": "cpp",
@@ -40,16 +44,12 @@
     "fstream": "cpp",
     "initializer_list": "cpp",
     "iomanip": "cpp",
-    "iostream": "cpp",
     "istream": "cpp",
     "limits": "cpp",
     "mutex": "cpp",
     "new": "cpp",
-    "ostream": "cpp",
     "sstream": "cpp",
-    "stdexcept": "cpp",
     "streambuf": "cpp",
-    "thread": "cpp",
     "typeinfo": "cpp"
   }
 }

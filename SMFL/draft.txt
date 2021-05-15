@@ -41,7 +41,7 @@ TEST_CASE("Test du constructeur de la class Grille.")
 
 
 {
-  Coord coordF = fourmi.getCoord();
+  Coord coordF = Ant.getCoord();
 
   Place pf = laGrille.chargePlace(coordF);
   EnsCoord voisCoord = voisines(coordF);
@@ -50,9 +50,9 @@ TEST_CASE("Test du constructeur de la class Grille.")
     for (int i = 0; i < voisCoord.taille(); i++)
     {
       Place vois = laGrille.chargePlace(voisCoord.nth(i));
-      if (Action().condtionNth(numRegle, fourmi, pf, vois))
+      if (Action().condtionNth(numRegle, Ant, pf, vois))
       {
-        Action().actionNth(numRegle, fourmi, pf, vois);
+        Action().actionNth(numRegle, Ant, pf, vois);
         laGrille.setPlace(pf);
         laGrille.setPlace(vois);
         return;
@@ -61,21 +61,21 @@ TEST_CASE("Test du constructeur de la class Grille.")
 }
 
 ==============
-    // dessineVecteur(lesFourmis.m_grid);
+    // dessineVecteur(lesAnts.m_grid);
 
     // std::cout << "\nSimu: " << i << std::endl;
     // std::cout << std::endl;
-    // std::cout << "Les Fourmis: " << lesFourmis << std::endl;
+    // std::cout << "Les Ants: " << lesAnts << std::endl;
     // std::cout << std::endl;
-    // std::cout << "Les Fourmis: " << lesFourmis << std::endl;
+    // std::cout << "Les Ants: " << lesAnts << std::endl;
     // std::cout << "\nFin" << std::endl;
 
 ==========
-// void initializeRandomPlaces(Grille &laGrille, GrilleFourmis &lesFourmis);
-// void dessine2DVecteur(std::vector<std::vector<Fourmi>> &t);
+// void initializeRandomPlaces(Grille &laGrille, GridAnts &lesAnts);
+// void dessine2DVecteur(std::vector<std::vector<Ant>> &t);
 
 =============
-void initializeRandomPlaces(Grille &laGrille, GrilleFourmis &lesFourmis)
+void initializeRandomPlaces(Grille &laGrille, GridAnts &lesAnts)
 {
   EnsCoord centre = EnsCoord();
   int idF = 0;
@@ -93,10 +93,10 @@ void initializeRandomPlaces(Grille &laGrille, GrilleFourmis &lesFourmis)
       else
       {
         Place pF = Place(c);
-        Fourmi f = Fourmi(c, idF);
+        Ant f = Ant(c, idF);
         pF.putAnt(f);
         laGrille.setPlace(pF);
-        lesFourmis.setAnt(f);
+        lesAnts.setAnt(f);
         idF++;
       }
     }
@@ -108,7 +108,7 @@ void initializeRandomPlaces(Grille &laGrille, GrilleFourmis &lesFourmis)
 
   pSucre.putSugar();
   laGrille.setPlace(pSucre);
-  testCoherence(laGrille, lesFourmis, "Initialisation");
+  testCoherence(laGrille, lesAnts, "Initialisation");
 }
 
 ===================
@@ -121,7 +121,7 @@ TEST_CASE("Test des méthodes de la classe Place.")
   CHECK_FALSE(p.isContainingAnt());
   CHECK_FALSE(p.estSurUnePiste());
   CHECK(p.estVide());
-  p.putAnt(Fourmi(c, 0));
+  p.putAnt(Ant(c, 0));
   CHECK(p.isContainingAnt());
   CHECK(p.getIdAnt() == 0);
   p.removeAnt();
@@ -130,8 +130,8 @@ TEST_CASE("Test des méthodes de la classe Place.")
   p.removeSugar();
   p.putAntNest();
   CHECK(p.isContainingAntNest());
-  p.putAnt(Fourmi(c, 0));
-  // CHECK_THROWS_AS(p.putAnt(Fourmi(c, 0)), std::runtime_error);
+  p.putAnt(Ant(c, 0));
+  // CHECK_THROWS_AS(p.putAnt(Ant(c, 0)), std::runtime_error);
   CHECK_FALSE(p.isContainingAnt());
   p.removeSugar();
   CHECK_FALSE(p.isContainingAnt());
@@ -153,19 +153,19 @@ TEST_CASE("Test des méthodes de la classe Place.")
           {
             Place mouse_place = laGrille.chargePlace(Coord(x, y));
 
-            Fourmi mouse_fourmi = Fourmi(Coord(x, y), lesFourmis.nouvelleId());
-            if (mouse_place.isContainingAnt() && lesFourmis.isContainingAntsCoord(Coord(x, y)))
+            Ant mouse_Ant = Ant(Coord(x, y), lesAnts.nouvelleId());
+            if (mouse_place.isContainingAnt() && lesAnts.isContainingAntsCoord(Coord(x, y)))
             {
 
-              lesFourmis.supprime(lesFourmis.position());
+              lesAnts.supprime(lesAnts.position());
               mouse_place.removeAnt();
               grid_state[y][x] = int(state_boxes::vide);
             }
 
-            else if (mouse_place.estVide() and mouse_place.putAnt(mouse_fourmi))
+            else if (mouse_place.estVide() and mouse_place.putAnt(mouse_Ant))
             {
-              lesFourmis.setAnt(mouse_fourmi);
-              grid_state[y][x] = int(state_boxes::fourmi);
+              lesAnts.setAnt(mouse_Ant);
+              grid_state[y][x] = int(state_boxes::Ant);
             }
 
             laGrille.setPlace(mouse_place);
@@ -173,7 +173,7 @@ TEST_CASE("Test des méthodes de la classe Place.")
         }
 
 ====================
-int GrilleFourmis::nouvelleId()
+int GridAnts::nouvelleId()
 {
   std::vector<int> id_existant;
   int new_id = 0;

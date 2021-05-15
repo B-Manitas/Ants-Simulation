@@ -1,15 +1,15 @@
-#include "Grid.hpp"
 #include "Action.hpp"
-#include "Place.hpp"
-#include "Coord.hpp"
 #include "Ant.hpp"
+#include "Coord.hpp"
+#include "Grid.hpp"
 #include "GridAnts.hpp"
-#include "doctest.h"
-#include <vector>
+#include "Place.hpp"
+
 #include <iostream>
 #include <sstream>
+#include <vector>
 
-Grille::Grille(int const size)
+Grid::Grid(int const size)
 {
   for (int y = 0; y < size; y++)
   {
@@ -20,27 +20,55 @@ Grille::Grille(int const size)
   }
 }
 
-Place Grille::getPlace(const Coord &coord) const
+Place Grid::getPlace(const Coord &coord) const
 {
-  int coord_x = coord.getX();
-  int coord_y = coord.getY();
+  unsigned int coord_x = coord.getX();
+  unsigned int coord_y = coord.getY();
 
   if (coord_x >= 0 && coord_x < m_grid[0].size() && coord_y >= 0 && coord_y < m_grid.size())
     return m_grid[coord_y][coord_x];
 
   else
-    throw std::runtime_error("La coordonnée est en dehors de la grille.");
+  {
+    std::ostringstream msg_error;
+    msg_error << "Error Constructor Coord : The coordinate "
+              << coord
+              << " is outside the limits of the grid.";
+    throw std::invalid_argument(msg_error.str());
+  }
 }
 
-void Grille::linearizePheroAntNest()
+Place Grid::getRandEmptyPlace() const
+{
+  Place rand_place = getRandPlace();
+  while (not rand_place.isEmpty())
+    rand_place = getRandPlace();
+
+  return rand_place;
+}
+
+Place Grid::getRandEmptyNeighbour(Coord const &coord) const
+{
+  EnsCoord set_neighbors = neighbors(coord);
+  for (size_t i = 0; i < set_neighbors.getSize(); i++)
+  {
+    Place place = getPlace(set_neighbors.getNth(i));
+    if (place.isEmpty())
+      return place;
+  }
+
+  return Place(true);
+}
+
+void Grid::linearizePheroAntNest()
 {
   bool is_stable = false;
 
   while (not is_stable)
   {
     is_stable = true;
-    for (int y = 0; y < getSize(); y++)
-      for (int x = 0; x < getSize(); x++)
+    for (size_t y = 0; y < getSize(); y++)
+      for (size_t x = 0; x < getSize(); x++)
       {
         Coord c = Coord(x, y);
         Place p = getPlace(c);
@@ -50,9 +78,9 @@ void Grille::linearizePheroAntNest()
           EnsCoord coordVoisins = neighbors(c);
           double maxPhero = 0;
 
-          for (int posVois = 0; posVois < coordVoisins.getSize(); posVois++)
+          for (size_t posVois = 0; posVois < coordVoisins.getSize(); posVois++)
           {
-            Place v = getPlace(coordVoisins.nth(posVois));
+            Place v = getPlace(coordVoisins.getNth(posVois));
             maxPhero = std::max(maxPhero, v.getPheroAntNest());
           }
 
@@ -69,10 +97,10 @@ void Grille::linearizePheroAntNest()
   }
 }
 
-void Grille::decreasePheroSugar(int const quantity)
+void Grid::decreasePheroSugar(int const quantity)
 {
-  for (int y = 0; y < getSize(); y++)
-    for (int x = 0; x < getSize(); x++)
+  for (size_t y = 0; y < getSize(); y++)
+    for (size_t x = 0; x < getSize(); x++)
     {
       Coord c = Coord(x, y);
       Place p = getPlace(c);
@@ -81,12 +109,12 @@ void Grille::decreasePheroSugar(int const quantity)
     }
 }
 
-std::ostream &operator<<(std::ostream &out, const Grille &grid)
+std::ostream &operator<<(std::ostream &out, const Grid &grid)
 {
   out << "{";
-  for (int i = 0; i < grid.m_grid.size(); i++)
+  for (size_t i = 0; i < grid.m_grid.size(); i++)
   {
-    for (int j = 0; j < grid.m_grid.size(); j++)
+    for (size_t j = 0; j < grid.m_grid.size(); j++)
       out << grid.m_grid[i][j];
 
     out << std::endl;
@@ -95,40 +123,40 @@ std::ostream &operator<<(std::ostream &out, const Grille &grid)
   return out;
 }
 
-void setSugars(Grille &grid, EnsCoord &set_sugars)
+void setSugars(Grid &grid, EnsCoord &set_sugars)
 {
   for (size_t i = 0; i < set_sugars.getSize(); i++)
   {
-    Place place = grid.getPlace(set_sugars.nth(i));
+    Place place = grid.getPlace(set_sugars.getNth(i));
     place.putSugar();
     grid.setPlace(place);
   }
 }
 
-void setAnts(Grille &grid, GrilleFourmis &ants, EnsCoord &set_ants)
+void setAnts(Grid &grid, GridAnts &ants, EnsCoord &set_ants)
 {
   for (size_t i = 0; i < set_ants.getSize(); i++)
   {
-    Coord coord = set_ants.nth(i);
+    Coord coord = set_ants.getNth(i);
     Place place = grid.getPlace(coord);
-    Fourmi ant = Fourmi(coord, i);
+    Ant ant = Ant(coord, i);
     ants.setAnt(ant);
     place.putAnt(ant);
     grid.setPlace(place);
   }
 }
 
-void setAntsNests(Grille &grid, EnsCoord &set_nests)
+void setAntsNests(Grid &grid, EnsCoord &set_nests)
 {
   for (size_t i = 0; i < set_nests.getSize(); i++)
   {
-    Place place = grid.getPlace(set_nests.nth(i));
+    Place place = grid.getPlace(set_nests.getNth(i));
     place.putAntNest();
     grid.setPlace(place);
   }
 }
 
-void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int nb_ants)
+void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_sugar, unsigned int nb_ants)
 {
   // Test if the initialization values are consistent.
   if (nb_sugar + nb_ants + 4 > GRID_SIZE)
@@ -163,7 +191,6 @@ void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int
 
   // Create the random ants set.
   // Get a random coord in the grid, to put a nest.
-  EnsCoord set_nests;
   Coord rand_coord = grid.getRandPlace().getCoord();
   while (set_places_taken.isContained(rand_coord))
     rand_coord = grid.getRandPlace().getCoord();
@@ -176,7 +203,7 @@ void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int
   set_nests_neighbors.shuffle();
   for (size_t i = 0; i < set_nests_neighbors.getSize(); i++)
   {
-    Coord place_nth = set_nests_neighbors.nth(i);
+    Coord place_nth = set_nests_neighbors.getNth(i);
     set_places_taken.add(place_nth);
     set_nests.add(place_nth);
 
@@ -191,7 +218,7 @@ void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int
   {
     for (size_t i = 0; i < set_nests_neighbors.getSize(); i++)
     {
-      Coord coord = set_nests_neighbors.nth(i);
+      Coord coord = set_nests_neighbors.getNth(i);
       if (not set_places_taken.isContained(coord))
       {
         set_places_taken.add(coord);
@@ -201,7 +228,7 @@ void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int
       // Change the set of neighbors because all places are already takes.
       // While the set of ants is not yet complete.
       if (set_ants.getSize() < nb_ants and i == set_nests_neighbors.getSize() - 1)
-        set_nests_neighbors = neighbors(randNth(set_nests_neighbors));
+        set_nests_neighbors = neighbors(set_nests_neighbors.getRandNth());
     }
   }
 
@@ -209,14 +236,14 @@ void initializeRandomPlaces(Grille &grid, GrilleFourmis &ants, int nb_sugar, int
   grid.linearizePheroAntNest();
 }
 
-void initializeGrid(Grille &grid, GrilleFourmis &ants, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests)
+void initializeGrid(Grid &grid, GridAnts &ants, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests)
 {
   setSugars(grid, set_sugars);
   setAnts(grid, ants, set_ants);
   setAntsNests(grid, set_nests);
 }
 
-void updateAnt(Fourmi &ant, Grille &grid)
+void updateAnt(Ant &ant, Grid &grid)
 {
   Coord coord = ant.getCoord();
   Place p1 = grid.getPlace(coord);
@@ -227,7 +254,7 @@ void updateAnt(Fourmi &ant, Grille &grid)
   for (int nb_rule = 2; nb_rule < 8; nb_rule++)
     for (size_t i = 0; i < set_neighbors.getSize(); i++)
     {
-      Coord coord_neighbour = set_neighbors.nth(i);
+      Coord coord_neighbour = set_neighbors.getNth(i);
       Place p2 = grid.getPlace(coord_neighbour);
       if (condtionNth(nb_rule, ant, p1, p2))
       {
@@ -239,29 +266,81 @@ void updateAnt(Fourmi &ant, Grille &grid)
     }
 }
 
-void updateSetAnts(Grille &grid, GrilleFourmis &ants)
+void updateSetAnts(Grid &grid, GridAnts &ants)
 {
   for (size_t i = 0; i < ants.getSize(); i++)
     updateAnt(ants.m_grid[i], grid);
 }
 
-TEST_SUITE_BEGIN("Test de la classe Grille.");
-TEST_CASE("Test de la fonction getPlace.")
+void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_new_ant, unsigned int nb_new_nest)
 {
-  CHECK(Grille(1).getPlace(Coord(0, 0)) == Place(Coord(0, 0)));
-  CHECK(Grille(5).getPlace(Coord(4, 4)) == Place(Coord(4, 4)));
-  CHECK_THROWS_AS(Grille(5).getPlace(Coord(5, 4)), std::runtime_error);
-  CHECK_THROWS_AS(Grille(5).getPlace(Coord(4, 5)), std::runtime_error);
-}
+  // Calculate the quantity of food for all the nests.
+  unsigned int nb_stored_food = 0;
+  unsigned const LIMITS_ANT = GRID_SIZE * GRID_SIZE * .5;
 
-TEST_CASE("Test de la fonction getPlace.")
-{
-  Grille g = Grille(2);
-  Coord c = Coord(1, 0);
-  Place p = g.getPlace(c);
-  p.putSugar();
-  g.setPlace(p);
+  for (size_t i = 0; i < set_nests.getSize(); i++)
+  {
+    Coord nest_coord = set_nests.getNth(i).getCoord();
+    nb_stored_food += grid.getPlace(nest_coord).getFoodReserve();
+  }
 
-  CHECK(g.getPlace(c) == p);
+  // Test if a new nest can be created.
+  if (ants.getSize() / set_nests.getSize() >= nb_new_nest * .1)
+  {
+    Place new_nest_place = grid.getRandEmptyNeighbour(set_nests.getRandNth());
+    if (not new_nest_place.isGhost() and new_nest_place.putAntNest())
+    {
+      set_nests.add(new_nest_place.getCoord());
+      grid.setPlace(new_nest_place);
+      std::cout << "A nest ant is created." << std::endl;
+    }
+  }
+
+  // Test if a new ant can be born.
+  else if (nb_stored_food / ants.getSize() >= nb_new_ant * .1 and ants.getSize() < LIMITS_ANT)
+  {
+
+    // Get a nest place containing food.
+    Place nest_with_food = grid.getPlace(set_nests.getNth(0));
+    for (size_t i = 1; i < set_nests.getSize(); i++)
+    {
+      if (not nest_with_food.isContainingFood())
+        nest_with_food = grid.getPlace(set_nests.getNth(i));
+
+      else
+        break;
+    }
+
+    std::cout << "ant1 ";
+    // Get a free place neighboor to nest where the ant will be birth.
+    Place nest_nursery = grid.getPlace(set_nests.getNth(0));
+    for (size_t i = 1; i < set_nests.getSize(); i++)
+    {
+      EnsCoord set_neighbors_nests = neighbors(set_nests.getNth(i));
+      if (not nest_nursery.isEmpty())
+        for (size_t i = 0; i < set_neighbors_nests.getSize(); i++)
+          nest_nursery = grid.getPlace(set_neighbors_nests.getNth(i));
+
+      else
+        break;
+    }
+
+    // Create the ant.
+    std::cout << "ant2 ";
+    Ant new_ant = Ant(nest_nursery.getCoord(), ants.getNewIndex());
+    std::cout << new_ant << std::endl;
+    std::cout << nest_nursery << std::endl;
+    if (nest_nursery.putAnt(new_ant))
+    {
+      nest_with_food.consumeFood();
+      ants.setAnt(new_ant);
+      grid.setPlace(nest_nursery);
+      std::cout << "A new ant is born." << std::endl;
+    }
+  }
+
+  else if (ants.getSize() >= LIMITS_ANT)
+  {
+    std::cout << "ant limit" << std::endl;
+  }
 }
-TEST_SUITE_END();

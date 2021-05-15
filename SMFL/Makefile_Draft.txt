@@ -1,43 +1,50 @@
+
+# SFML Variable
+LIBS= -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
+CXX= g++
+CXXFLAGS= -Wall -std=c++11 -Isrc/include
+LDFLAGS= 
+EXEC_FILES= Main
+SRC= $(wildcard *.cpp)
+OBJ= $(SRC:.cpp=.o)
+
+# Variable depending on the OS.
 ifeq ($(OS),Windows_NT) 
 RM = del
 else
 RM = rm -rf
 endif
 
-all: compile-sfml link-sfml
-	./main
+all: $(EXEC_FILES)
 
-test.o: Test.cpp Coord.hpp Ant.hpp Place.hpp Grid.hpp Action.hpp
-	g++ -Wall -std=c++11 -c Test.cpp
+Coord: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-test: test.o coord.o fourmi.o place.o grille.o action.o
-	g++ -Wall -std=c++11 -o test test.o coord.o fourmi.o place.o grille.o action.o
+Ant: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-run-test: test
-	-$(RM) *.o
-	./test
+Place: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+	
+Action: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-principal.o: principal.hpp Coord.hpp Ant.hpp Place.hpp Grid.hpp GridAnts.hpp Action.hpp
-	g++ -Wall -std=c++11 -c principal.cpp
+Grid: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-principal: principal.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
-	g++ -Wall -std=c++11 -o principal principal.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
+GridAnts: $(OBJ)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-run-principal: principal
-	-$(RM) *.o
-	./principal
+Coord.o: Coord.hpp
+Ant.o: Coord.hpp 
+Place.o: Ant.hpp Coord.hpp
+Action.o: Ant.hpp Place.hpp
+Grid.o: Action.hpp Ant.hpp Coord.hpp Grid.hpp GridAnts.hpp Place.hpp
+GridAnts.o: Ant.hpp Coord.hpp Grid.hpp
+Main.o: Coord.hpp Grid.hpp GridAnts.hpp Place.hpp
 
-main.o: Coord.hpp Ant.hpp Place.hpp Grid.hpp GridAnts.hpp Action.hpp
-	g++ -Wall -std=c++11 -c main.cpp
-
-main: main.o coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
-	g++ -Wall -std=c++11 -o  main coord.o fourmi.o place.o grille.o grilleFourmis.o action.o
-
-compile-sfml: main
-	g++ -Isrc/include -c main.cpp
-
-link-sfml:
-	g++ main.o -o main -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
+%.o: %.cpp
+	$(CXX) -o $@ -c $^ $(LDFLAGS) $(LIBS)
 
 clean:
-	-$(RM) *.o
+	$(RM) *.o

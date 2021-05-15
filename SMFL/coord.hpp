@@ -1,9 +1,9 @@
 #ifndef COORD_H
 #define COORD_H
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
 const int GRID_SIZE = 50;
 
@@ -39,6 +39,8 @@ public:
   EnsCoord(){};
   EnsCoord(std::vector<Coord> set) : m_coords{set} {};
 
+  /**Return the size of the set.*/
+  size_t getSize() const { return m_coords.size(); };
   /**
    * Returns whether the coordinate is contained in the set.
    * @param coord The coordinate.
@@ -62,14 +64,18 @@ public:
   void remove(const Coord coord);
   /**Shuffle the set.*/
   void shuffle() { std::random_shuffle(m_coords.begin(), m_coords.end()); };
-  /**Return the size of the set.*/
-  int getSize() const { return m_coords.size(); };
+
   /**
    * Return the nth coordinate of the set.
    * @param n The nth integer of the set.
    * @return Return a coordinate of the set.
   */
-  Coord nth(const int &n) const;
+  Coord getNth(const unsigned int &n) const;
+  /**
+   * A random coord of the set.
+   * @return Return a random coordinate in the set.
+  */
+  Coord getRandNth() const { return getNth(std::rand() % getSize()); };
 
   friend std::ostream &operator<<(std::ostream &out, const EnsCoord &tableau);
   bool operator==(const EnsCoord &set) const;
@@ -82,11 +88,5 @@ public:
  * @return Returns all the coordinates around the one given in parameter.
 */
 EnsCoord neighbors(Coord const &coord);
-/**
- * A random of the set.
- * @param ens The set.
- * @return Return a random coordinate in the set.
-*/
-Coord randNth(EnsCoord const &set);
 
 #endif
