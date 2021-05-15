@@ -20,7 +20,7 @@ std::ostream &operator<<(std::ostream &out, const Ant &ant)
 {
   out << "{ Coord: " << ant.getCoord()
       << ", Id: " << ant.getIndex()
-      << ", Sugar: " << ((ant.lookForSugar() == true) ? "Yes" : "No")
+      << ", Sugar: " << ((ant.lookForSugar() == true) ? "No" : "Yes")
       << " }";
 
   return out;

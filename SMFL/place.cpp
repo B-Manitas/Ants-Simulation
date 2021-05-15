@@ -69,10 +69,10 @@ std::ostream &operator<<(std::ostream &out, const Place &place)
   out << "{ "
       << "Coord: " << place.getCoord() << ", "
       << "Id Ant: " << place.getIdAnt() << ", "
-      << "Phero Nid: " << place.getPheroAntNest() << ", "
-      << "Phero Sucre: " << place.getPheroSugar() << ", "
-      << "Nid: " << (place.isContainingAntNest() ? "Oui" : "Non") << ", "
-      << "Sucre: " << (place.isContainingSugar() ? "Oui" : "Non") << " }";
+      << "Phero Ant: " << place.getPheroAntNest() << ", "
+      << "Phero Sugar: " << place.getPheroSugar() << ", "
+      << "Ant: " << (place.isContainingAntNest() ? "Oui" : "Non") << ", "
+      << "Sugar: " << (place.isContainingSugar() ? "Oui" : "Non") << " }";
 
   return out;
 }

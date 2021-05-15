@@ -4,6 +4,7 @@
 #include "GridAnts.hpp"
 #include "Place.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -113,9 +114,10 @@ int main()
 
   // Variables declaration.
   const int SQUARE_SIZE = 10;
+  const int INITIAL_TIME = 100;
   const int INTERVAL_TIME = 5;
+  int time = INITIAL_TIME;
   int iteration = 0;
-  int time = 100;
   bool is_playing = false;
 
   // Creation of grids
@@ -123,7 +125,7 @@ int main()
   GridAnts ants;
   EnsCoord set_nests;
 
-  initializeRandomPlaces(grid, ants, set_nests);
+  initializeRandomPlaces(grid, ants, set_nests, 5, 1);
   consistencyTest(grid, ants, "Grid Initialization");
   std::vector<std::vector<int>> grid_state = getGridState(grid, ants);
 
@@ -176,15 +178,15 @@ int main()
         // Increase the speed time.
         else if (app_event.key.code == sf::Keyboard::Left)
         {
-          time = std::max(time + INTERVAL_TIME, 0);
-          std::cout << "Time: " << time << std::endl;
+          time = std::min(time + INTERVAL_TIME, 1000);
+          // std::cout << std::setprecision(2) << "Time: " << static_cast<double>(time) / INITIAL_TIME << std::endl;
         }
 
         // Decrease the speed time.
         else if (app_event.key.code == sf::Keyboard::Right)
         {
-          time = std::min(time - INTERVAL_TIME, 1000);
-          std::cout << "Time: " << time << std::endl;
+          time = std::max(time - INTERVAL_TIME, 0);
+          // std::cout << std::setprecision(2) << "Time: " << static_cast<double>(time) / INITIAL_TIME << std::endl;
         }
 
         // Stop the simulation.
@@ -328,8 +330,12 @@ int main()
       consistencyTest(grid, ants, "Simulation " + std::to_string(iteration));
       grid.decreasePheroSugar(3);
       grid_state = getGridState(grid, ants);
-      evolution(grid, ants, set_nests, 20, 10);
+      // evolution(grid, ants, set_nests, 20, 10);
       txt_pause.setString("Space to pause.");
+
+      // Pause the simulation.
+      iteration++;
+      sf::sleep(sf::milliseconds(time));
     }
     else
       txt_pause.setString("Space to play.");
@@ -339,10 +345,6 @@ int main()
     window.draw(txt_mouse);
     window.draw(txt_arrow);
     window.display();
-
-    // Pause the simulation.
-    sf::sleep(sf::milliseconds(time));
-    iteration++;
   }
   return 0;
 }

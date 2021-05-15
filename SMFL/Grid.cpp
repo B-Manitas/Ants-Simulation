@@ -70,26 +70,26 @@ void Grid::linearizePheroAntNest()
     for (size_t y = 0; y < getSize(); y++)
       for (size_t x = 0; x < getSize(); x++)
       {
-        Coord c = Coord(x, y);
-        Place p = getPlace(c);
+        Coord coord = Coord(x, y);
+        Place place = getPlace(coord);
 
-        if (p.getPheroAntNest() < 1)
+        if (place.getPheroAntNest() < 1)
         {
-          EnsCoord coordVoisins = neighbors(c);
-          double maxPhero = 0;
+          EnsCoord coord_neighbour = neighbors(coord);
+          double max_phero_nest = 0;
 
-          for (size_t posVois = 0; posVois < coordVoisins.getSize(); posVois++)
+          for (size_t posVois = 0; posVois < coord_neighbour.getSize(); posVois++)
           {
-            Place v = getPlace(coordVoisins.getNth(posVois));
-            maxPhero = std::max(maxPhero, v.getPheroAntNest());
+            Place place_neighbour = getPlace(coord_neighbour.getNth(posVois));
+            max_phero_nest = std::max(max_phero_nest, place_neighbour.getPheroAntNest());
           }
 
-          maxPhero -= 1. / GRID_SIZE;
+          max_phero_nest -= 1. / GRID_SIZE;
 
-          if (maxPhero > p.getPheroAntNest())
+          if (max_phero_nest > place.getPheroAntNest())
           {
-            p.putPheroAntNest(maxPhero);
-            setPlace(p);
+            place.putPheroAntNest(max_phero_nest);
+            setPlace(place);
             is_stable = false;
           }
         }
@@ -247,6 +247,7 @@ void updateAnt(Ant &ant, Grid &grid)
 {
   Coord coord = ant.getCoord();
   Place p1 = grid.getPlace(coord);
+  std::cout << p1 << std::endl;
   EnsCoord set_neighbors = neighbors(coord);
 
   set_neighbors.shuffle();
@@ -311,7 +312,6 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
         break;
     }
 
-    std::cout << "ant1 ";
     // Get a free place neighboor to nest where the ant will be birth.
     Place nest_nursery = grid.getPlace(set_nests.getNth(0));
     for (size_t i = 1; i < set_nests.getSize(); i++)
@@ -326,10 +326,7 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
     }
 
     // Create the ant.
-    std::cout << "ant2 ";
     Ant new_ant = Ant(nest_nursery.getCoord(), ants.getNewIndex());
-    std::cout << new_ant << std::endl;
-    std::cout << nest_nursery << std::endl;
     if (nest_nursery.putAnt(new_ant))
     {
       nest_with_food.consumeFood();
@@ -340,7 +337,5 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
   }
 
   else if (ants.getSize() >= LIMITS_ANT)
-  {
-    std::cout << "ant limit" << std::endl;
-  }
+    std::cout << "It is overpopulation." << std::endl;
 }

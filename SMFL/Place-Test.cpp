@@ -6,12 +6,20 @@
 
 #include <sstream>
 
-TEST_SUITE_BEGIN("Test de la classe Place.");
+TEST_SUITE_BEGIN("Place class tests.");
 
-TEST_CASE("Test de la fonction putSugar.")
+TEST_CASE("Place isEmpty")
 {
   Place p;
-  p.putSugar();
+  CHECK(p.isEmpty());
+  p.putSugar(1);
+  CHECK_FALSE(p.isEmpty());
+}
+
+TEST_CASE("Place putSugar")
+{
+  Place p;
+  p.putSugar(1);
   CHECK(p.isContainingSugar());
   CHECK(p.getPheroSugar() == 255);
 
@@ -20,16 +28,7 @@ TEST_CASE("Test de la fonction putSugar.")
   CHECK_FALSE(p2.putSugar());
 }
 
-TEST_CASE("Test de la fonction removeSugar")
-{
-  Place p;
-  p.putSugar(1);
-  p.removeSugar();
-  CHECK_FALSE(p.isContainingSugar());
-  CHECK(p.getPheroSugar() == 255);
-}
-
-TEST_CASE("Test de la fonction putAntNest")
+TEST_CASE("Place putAntNest an removeAntNest")
 {
   Place p;
   p.putAntNest();
@@ -38,7 +37,7 @@ TEST_CASE("Test de la fonction putAntNest")
   CHECK_FALSE(p.putAnt(Ant()));
 }
 
-TEST_CASE("Test de la fonction putAnt")
+TEST_CASE("Place putAnt")
 {
   // Testes de poser plusieurs Ants sur une même place.
   Place p;
@@ -65,7 +64,30 @@ TEST_CASE("Test de la fonction putAnt")
   CHECK(p3.isContainingAnt());
 }
 
-TEST_CASE("Test de la fonction removeAnt")
+TEST_CASE("Place putPheroAntNest")
+{
+  Place p;
+  p.putPheroAntNest(.5);
+  CHECK(p.getPheroAntNest() == .5);
+}
+
+TEST_CASE("Place putPheroSugar")
+{
+  Place p;
+  p.putPheroSugar(100);
+  CHECK(p.getPheroSugar() == 100);
+}
+
+TEST_CASE("Place removeSugar")
+{
+  Place p;
+  p.putSugar(1);
+  p.removeSugar();
+  CHECK_FALSE(p.isContainingSugar());
+  CHECK(p.getPheroSugar() == 255);
+}
+
+TEST_CASE("Place removeAnt")
 {
   Place p;
   p.putAnt(Ant(Coord(), 0));
@@ -73,21 +95,7 @@ TEST_CASE("Test de la fonction removeAnt")
   CHECK_FALSE(p.isContainingAnt());
 }
 
-TEST_CASE("Test de la fonction putPheroAntNest")
-{
-  Place p;
-  p.putPheroAntNest(.5);
-  CHECK(p.getPheroAntNest() == .5);
-}
-
-TEST_CASE("Test de la fonction putPheroSugar")
-{
-  Place p;
-  p.putPheroSugar(100);
-  CHECK(p.getPheroSugar() == 100);
-}
-
-TEST_CASE("Test de la fonction removePheroSugar")
+TEST_CASE("Place removePheroSugar")
 {
   Place p;
   p.putPheroSugar(100);
@@ -95,7 +103,7 @@ TEST_CASE("Test de la fonction removePheroSugar")
   CHECK_FALSE(p.isContainingPheroSugar());
 }
 
-TEST_CASE("Test de la fonction decreasePheroSugar")
+TEST_CASE("Place decreasePheroSugar")
 {
   Place p;
   p.putPheroSugar(255);
@@ -103,7 +111,7 @@ TEST_CASE("Test de la fonction decreasePheroSugar")
   CHECK(p.getPheroSugar() == 254);
 }
 
-TEST_CASE("Test de l'operator== et !=.")
+TEST_CASE("Place operator == et !=.")
 {
   Place p = Place(Coord(0, 0));
   Place p2 = Place(Coord(1, 0));
@@ -115,23 +123,34 @@ TEST_CASE("Test de l'operator== et !=.")
   CHECK(p2 != p3);
 }
 
-TEST_CASE("Test de l'operateur <<.")
+TEST_CASE("Place operator <<.")
 {
   std::ostringstream stream;
   stream << Place(Coord(2, 3));
 
   std::ostringstream streamCheck;
   streamCheck << "{ Coord: (2, 3), "
-              << "Num Ant: -1, "
-              << "Phero Nid: 0, "
-              << "Phero Sucre: 0, "
-              << "Nid: Non, "
-              << "Sucre: Non }";
+              << "Id Ant: -1, "
+              << "Phero Ant: 0, "
+              << "Phero Sugar: 0, "
+              << "Ant: Non, "
+              << "Sugar: Non }";
 
   CHECK(stream.str() == streamCheck.str());
 }
+TEST_SUITE_END();
 
-TEST_CASE("Test de la fonction moveAnts.")
+TEST_SUITE_BEGIN("Non-member function tests.");
+TEST_CASE("Non-member function isCloserToNest.")
+{
+  Place p1, p2;
+  p1.putPheroAntNest(.5);
+  p2.putPheroAntNest(.3);
+
+  CHECK(isCloserToNest(p1, p2));
+}
+
+TEST_CASE("Non-member function moveAnts.")
 {
   Coord c = Coord(0, 0);
   Place p1 = Place(c);
@@ -143,5 +162,4 @@ TEST_CASE("Test de la fonction moveAnts.")
   CHECK(p2.isContainingAnt());
   CHECK(f.getCoord() == p2.getCoord());
 }
-
 TEST_SUITE_END();

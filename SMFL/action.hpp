@@ -42,10 +42,9 @@ bool condition5(Ant ant, Place p1, Place p2);
  * Return true if the ant is looking for sugar, the place p2 is on sugar trail and is empty.
  * Otherwise, return false. 
  * @param ant The ant.
- * @param p1 The place p1.
  * @param p2 The place p2.
 */
-bool condition6(Ant ant, Place p1, Place p2);
+bool condition6(Ant ant, Place p2);
 /**
  * Return true, if the ant is looking for sugar and the place p2 is empty.
  * Otherwise, return false. 

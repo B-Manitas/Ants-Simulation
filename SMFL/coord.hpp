@@ -25,7 +25,7 @@ public:
   int getY() const { return m_y; };
 
   bool operator==(const Coord &coord) const { return m_y == coord.getY() && m_x == coord.getX(); };
-  bool operator!=(const Coord &coord) const { return !(*this == coord); };
+  bool operator!=(const Coord &coord) const { return not(*this == coord); };
   friend std::ostream &operator<<(std::ostream &out, const Coord &coord);
 };
 
@@ -77,9 +77,9 @@ public:
   */
   Coord getRandNth() const { return getNth(std::rand() % getSize()); };
 
-  friend std::ostream &operator<<(std::ostream &out, const EnsCoord &tableau);
   bool operator==(const EnsCoord &set) const;
   bool operator!=(const EnsCoord &set) const { return not(*this == set); };
+  friend std::ostream &operator<<(std::ostream &out, const EnsCoord &tableau);
 };
 
 /**
