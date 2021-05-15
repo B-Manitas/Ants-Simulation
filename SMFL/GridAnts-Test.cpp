@@ -41,6 +41,17 @@ TEST_CASE("GridAnts getAnt and setAnt.")
   CHECK(ant_4 == ant_2);
 }
 
+TEST_CASE("GridAnts getNth")
+{
+  GridAnts grid;
+  Ant ant_1 = Ant(Coord(0, 0), 0);
+  Ant ant_2 = Ant(Coord(1, 1), 1);
+  grid.setAnt(ant_1);
+  grid.setAnt(ant_2);
+  CHECK(grid.getNth(0) == ant_1);
+  CHECK(grid.getNth(1) == ant_2);
+}
+
 TEST_CASE("GridAnts isContainingAnts.")
 {
   Ant ant = Ant(Coord(0, 0), 1);

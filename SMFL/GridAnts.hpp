@@ -6,11 +6,13 @@
 
 #include <vector>
 
-struct GridAnts
+class GridAnts
 {
+private:
   std::vector<Ant> m_grid;
   int m_index;
 
+public:
   GridAnts() : m_grid{std::vector<Ant>()}, m_index{-1} {};
   /**
    * Get the position of the ant in the grid.
@@ -27,6 +29,12 @@ struct GridAnts
    * @return Return the ant, to the coordinate passed in the parameter.
   */
   Ant getAnt(Coord const &coord) const;
+  /**
+   * Return the nth ant of the grid.
+   * @param n The nth integer of the set.
+   * @return Return a ant of the grid.
+  */
+  Ant getNth(unsigned int const n);
   /**Return a random index not used an ants.*/
   int getNewIndex();
   /**
@@ -52,7 +60,7 @@ struct GridAnts
    * @param ant The ant to remove.
   */
   void remove(Ant const &ant);
-  friend std::ostream &operator<<(std::ostream &out, GridAnts const &ants);
+  friend std::ostream &operator<<(std::ostream &out, GridAnts &ants);
 };
 
 #endif

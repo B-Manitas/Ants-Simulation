@@ -26,6 +26,20 @@ Ant GridAnts::getAnt(Coord const &coord) const
   throw std::invalid_argument(msg_error.str());
 }
 
+Ant GridAnts::getNth(unsigned int const n)
+{
+  if (n <= getSize())
+    return m_grid[n];
+  else
+  {
+    std::ostringstream msg_error;
+    msg_error << "Error getNth GridAnts : The parameter n= "
+              << n
+              << " is out of range.";
+    throw std::invalid_argument(msg_error.str());
+  }
+}
+
 void GridAnts::setAnt(Ant const &ant)
 {
   if (not isContainingAnts(ant.getIndex()))
@@ -65,12 +79,12 @@ int GridAnts::getNewIndex()
   return m_index;
 }
 
-std::ostream &operator<<(std::ostream &out, GridAnts const &ants)
+std::ostream &operator<<(std::ostream &out, GridAnts &ants)
 {
   out << "{";
   for (size_t i = 0; i < ants.getSize(); i++)
   {
-    out << ants.m_grid[i];
+    out << ants.getNth(i);
     if (i != ants.getSize() - 1)
       out << ", ";
   }

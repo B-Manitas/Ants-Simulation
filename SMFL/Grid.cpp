@@ -113,10 +113,10 @@ void Grid::decreasePheroSugar(int const quantity)
 std::ostream &operator<<(std::ostream &out, const Grid &grid)
 {
   out << "{";
-  for (size_t i = 0; i < grid.m_grid.size(); i++)
+  for (size_t y = 0; y < grid.getSize(); y++)
   {
-    for (size_t j = 0; j < grid.m_grid.size(); j++)
-      out << grid.m_grid[i][j];
+    for (size_t x = 0; x < grid.getSize(); x++)
+      out << grid.getPlace(Coord(x, y));
 
     out << std::endl;
   }
@@ -270,7 +270,11 @@ void updateAnt(Ant &ant, Grid &grid)
 void updateSetAnts(Grid &grid, GridAnts &ants)
 {
   for (size_t i = 0; i < ants.getSize(); i++)
-    updateAnt(ants.m_grid[i], grid);
+  {
+    Ant ant = ants.getNth(i);
+    updateAnt(ant, grid);
+    ants.setAnt(ant);
+  }
 }
 
 void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_new_ant, unsigned int nb_new_nest)

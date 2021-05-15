@@ -9,10 +9,12 @@
 #include <iostream>
 #include <vector>
 
-struct Grid
+class Grid
 {
+private:
   std::vector<std::vector<Place>> m_grid;
 
+public:
   Grid() : m_grid(std::vector<std::vector<Place>>()){};
   Grid(int const size);
 

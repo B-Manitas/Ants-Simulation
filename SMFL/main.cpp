@@ -116,6 +116,8 @@ int main()
   const int SQUARE_SIZE = 10;
   const int INITIAL_TIME = 100;
   const int INTERVAL_TIME = 5;
+  const int NB_SUGAR = 10;
+  const int NB_ANT = 12;
   int time = INITIAL_TIME;
   int iteration = 0;
   bool is_playing = false;
@@ -125,7 +127,7 @@ int main()
   GridAnts ants;
   EnsCoord set_nests;
 
-  initializeRandomPlaces(grid, ants, set_nests, 5, 1);
+  initializeRandomPlaces(grid, ants, set_nests, NB_SUGAR, NB_ANT);
   consistencyTest(grid, ants, "Grid Initialization");
   std::vector<std::vector<int>> grid_state = getGridState(grid, ants);
 
@@ -203,7 +205,7 @@ int main()
           grid = Grid(GRID_SIZE);
           ants = GridAnts();
           set_nests = EnsCoord();
-          initializeRandomPlaces(grid, ants, set_nests);
+          initializeRandomPlaces(grid, ants, set_nests, NB_SUGAR, NB_ANT);
           consistencyTest(grid, ants, "Grid Initialization after Reset");
           grid_state = getGridState(grid, ants);
           iteration = 0;

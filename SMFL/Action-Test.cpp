@@ -3,6 +3,7 @@
 #include "Coord.hpp"
 #include "Doctest.h"
 #include "Place.hpp"
+#include <iostream>
 
 TEST_SUITE_BEGIN("Conditions tests.");
 TEST_CASE("Condition 1")
@@ -33,11 +34,10 @@ TEST_CASE("Condition 4")
   Ant ant = Ant(Coord(0, 0), 0);
   ant.carrySugar();
   Place p1 = Place(Coord(1, 0));
-  p1.putPheroAntNest(.2);
+  p1.putPheroAntNest(.1);
 
   Place p2 = Place(Coord());
-  p2.putPheroAntNest(.1);
-
+  p2.putPheroAntNest(.2);
   CHECK(condition4(ant, p1, p2));
 }
 
