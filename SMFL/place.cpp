@@ -51,17 +51,13 @@ bool Place::putAntNest()
 void Place::putPheroSugar(double quantity)
 {
   if (quantity > 0)
-    m_pheroSugar += (quantity > 255) ? 255 : quantity;
-
-  m_pheroSugar = std::min(m_pheroSugar, 255);
+    m_pheroSugar = (quantity > 255) ? 255 : quantity;
 };
 
 void Place::putPheroAntNest(double quantity)
 {
   if (quantity > 0)
-    m_pheroAntNest += (quantity > 1) ? 1 : quantity;
-
-  m_pheroAntNest = std::min(m_pheroAntNest, 1.);
+    m_pheroAntNest = (quantity > 1) ? 1 : quantity;
 };
 
 std::ostream &operator<<(std::ostream &out, const Place &place)

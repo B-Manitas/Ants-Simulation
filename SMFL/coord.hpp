@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-const int GRID_SIZE = 50;
+const int GRID_SIZE = 80;
 
 class Coord
 {

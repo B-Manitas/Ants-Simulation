@@ -5,7 +5,7 @@
 bool condition1(Ant ant, Place p2) { return p2.isContainingAnt(); };
 bool condition2(Ant ant, Place p2) { return ant.lookForSugar() && p2.isContainingSugar(); };
 bool condition3(Ant ant, Place p2) { return not ant.lookForSugar() && p2.isContainingAntNest(); };
-bool condition4(Ant ant, Place p1, Place p2) { return not ant.lookForSugar() && p2.isEmpty() && isCloserToNest(p1, p2); };
+bool condition4(Ant ant, Place p1, Place p2) { return not ant.lookForSugar() && p2.isEmpty() && isCloserToNest(p2, p1); };
 bool condition5(Ant ant, Place p1, Place p2) { return ant.lookForSugar() && p1.isOnSugarTrail() && p2.isEmpty() && not isCloserToNest(p2, p1) && p2.isOnSugarTrail(); };
 bool condition6(Ant ant, Place p2) { return ant.lookForSugar() && p2.isOnSugarTrail() && p2.isEmpty(); };
 bool condition7(Ant ant, Place p2) { return ant.lookForSugar() && p2.isEmpty(); };
@@ -53,8 +53,6 @@ void action4(Ant &ant, Place &p1, Place &p2)
 
 void actionMove(Ant &ant, Place &p1, Place &p2)
 {
-  if (p1 == p2)
-    std::cout << p1 << std::endl;
   moveAnt(ant, p1, p2);
 }
 

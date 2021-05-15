@@ -76,15 +76,16 @@ void Grid::linearizePheroAntNest()
         if (place.getPheroAntNest() < 1)
         {
           EnsCoord coord_neighbour = neighbors(coord);
+          coord_neighbour.shuffle();
           double max_phero_nest = 0;
 
-          for (size_t posVois = 0; posVois < coord_neighbour.getSize(); posVois++)
+          for (size_t i = 0; i < coord_neighbour.getSize(); i++)
           {
-            Place place_neighbour = getPlace(coord_neighbour.getNth(posVois));
+            Place place_neighbour = getPlace(coord_neighbour.getNth(i));
             max_phero_nest = std::max(max_phero_nest, place_neighbour.getPheroAntNest());
           }
 
-          max_phero_nest -= 1. / GRID_SIZE;
+          max_phero_nest = max_phero_nest - 1. / GRID_SIZE;
 
           if (max_phero_nest > place.getPheroAntNest())
           {
@@ -247,7 +248,6 @@ void updateAnt(Ant &ant, Grid &grid)
 {
   Coord coord = ant.getCoord();
   Place p1 = grid.getPlace(coord);
-  std::cout << p1 << std::endl;
   EnsCoord set_neighbors = neighbors(coord);
 
   set_neighbors.shuffle();

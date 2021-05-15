@@ -30,33 +30,33 @@ void consistencyTest(Grid &grid, GridAnts &ants, std::string title)
 {
   std::ostringstream error_msg;
 
-  // Take the first test. Test if the ant's index and square match.
+  // Take the first test. Test if the ant's index and place match.
   for (auto &ant : ants.m_grid)
   {
-    Place square = grid.getPlace(ant.getCoord());
+    Place place = grid.getPlace(ant.getCoord());
 
-    if (square.getIdAnt() != ant.getIndex())
+    if (place.getIdAnt() != ant.getIndex())
     {
       error_msg << title << std::endl;
-      error_msg << "Inconsistent Simulation Error: The index of an ant does not correspond to its square." << std::endl
+      error_msg << "Inconsistent Simulation Error: The index of an ant does not correspond to its place." << std::endl
                 << "Ant: " << ant << std::endl
-                << "Square: " << square << std::endl;
+                << "place: " << place << std::endl;
 
       throw std::runtime_error(error_msg.str());
     }
   }
 
-  // Take the second test. Test if the square has a ghost ant.
+  // Take the second test. Test if the place has a ghost ant.
   for (size_t y = 0; y < grid.getSize(); y++)
     for (size_t x = 0; x < grid.getSize(); x++)
     {
-      Place square = grid.getPlace(Coord(x, y));
+      Place place = grid.getPlace(Coord(x, y));
 
-      if (square.isContainingAnt() && not ants.isContainingAnts(square.getIdAnt()))
+      if (place.isContainingAnt() && not ants.isContainingAnts(place.getIdAnt()))
       {
         error_msg << title << std::endl;
-        error_msg << "Inconsistent Simulation Error: A square contains an ant that doesn't exist." << std::endl
-                  << "Square: " << square << std::endl
+        error_msg << "Inconsistent Simulation Error: A place contains an ant that doesn't exist." << std::endl
+                  << "place: " << place << std::endl
                   << "Ants: " << ants << std::endl;
 
         throw std::runtime_error(error_msg.str());
@@ -179,14 +179,14 @@ int main()
         else if (app_event.key.code == sf::Keyboard::Left)
         {
           time = std::min(time + INTERVAL_TIME, 1000);
-          // std::cout << std::setprecision(2) << "Time: " << static_cast<double>(time) / INITIAL_TIME << std::endl;
+          std::cout << "Time: " << time << std::endl;
         }
 
         // Decrease the speed time.
         else if (app_event.key.code == sf::Keyboard::Right)
         {
           time = std::max(time - INTERVAL_TIME, 0);
-          // std::cout << std::setprecision(2) << "Time: " << static_cast<double>(time) / INITIAL_TIME << std::endl;
+          std::cout << "Time: " << time << std::endl;
         }
 
         // Stop the simulation.
@@ -330,7 +330,7 @@ int main()
       consistencyTest(grid, ants, "Simulation " + std::to_string(iteration));
       grid.decreasePheroSugar(3);
       grid_state = getGridState(grid, ants);
-      // evolution(grid, ants, set_nests, 20, 10);
+      evolution(grid, ants, set_nests, 20, 10);
       txt_pause.setString("Space to pause.");
 
       // Pause the simulation.
