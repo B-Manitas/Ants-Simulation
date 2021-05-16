@@ -6,6 +6,21 @@
 #include <vector>
 
 const int GRID_SIZE = 80;
+const int SQUARE_SIZE = 10;
+const int INITIAL_SPEED_TIME = 100;
+const int INTERVAL_TIME = 5;
+const int MAX_TIME = 200;
+const int MIN_TIME = 0;
+const int NB_SUGAR = 10;
+const int NB_ANT = 15;
+enum class place_state
+{
+  ant,
+  nest,
+  sugar,
+  phero_sugar,
+  empty
+};
 
 class Coord
 {

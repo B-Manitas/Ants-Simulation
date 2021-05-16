@@ -1,3 +1,4 @@
+#include "MainMenu.hpp"
 #include "Ant.hpp"
 #include "Coord.hpp"
 #include "Grid.hpp"
@@ -8,21 +9,12 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <cmath>
 #include <sstream>
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-int main()
+MainMenu::MainMenu() : m_speed_time{INITIAL_SPEED_TIME}, m_iteration{0}, m_is_playing{false}
 {
-  srand((unsigned)time(NULL));
-
-  // Variables declaration.
-
-  int speed_time = INITIAL_SPEED_TIME;
-  int iteration = 0;
-  bool is_playing = false;
-
   // Creation of grids
   Grid grid = Grid(GRID_SIZE);
   GridAnts ants;
@@ -39,26 +31,24 @@ int main()
 
   // Create the texts.
   sf::Font font;
-  if (!font.loadFromFile("./asset/Roboto-Medium.ttf"))
+  if (!font.loadFromFile("./asset/arial.ttf"))
     std::cout << "Warning Font: Failed to load the font." << std::endl;
 
-  sf::Text txt_days;
-  txt_days.setFont(font);
-  txt_days.setCharacterSize(15);
-  txt_days.setPosition(10, SQUARE_SIZE * GRID_SIZE + 10);
-  txt_days.setFillColor(sf::Color::White);
+  sf::Text txt_pause;
+  txt_pause.setFont(font);
+  txt_pause.setCharacterSize(15);
+  txt_pause.setPosition(10, SQUARE_SIZE * GRID_SIZE + 10);
+  txt_pause.setFillColor(sf::Color::White);
 
-  sf::Text txt_nb_ants;
-  txt_nb_ants.setFont(font);
-  txt_nb_ants.setCharacterSize(15);
-  txt_nb_ants.setPosition(10, SQUARE_SIZE * GRID_SIZE + 25);
-  txt_nb_ants.setFillColor(sf::Color::White);
+  sf::Text txt_mouse("Right click to toggled sugar/no sugar.", font);
+  txt_mouse.setCharacterSize(15);
+  txt_mouse.setPosition(10, SQUARE_SIZE * GRID_SIZE + 25);
+  txt_mouse.setFillColor(sf::Color::White);
 
-  sf::Text txt_nests_size;
-  txt_nests_size.setFont(font);
-  txt_nests_size.setCharacterSize(15);
-  txt_nests_size.setPosition(10, SQUARE_SIZE * GRID_SIZE + 40);
-  txt_nests_size.setFillColor(sf::Color::White);
+  sf::Text txt_arrow("Left  click to toggled ant/no ant.", font);
+  txt_arrow.setCharacterSize(15);
+  txt_arrow.setPosition(10, SQUARE_SIZE * GRID_SIZE + 40);
+  txt_arrow.setFillColor(sf::Color::White);
 
   while (window.isOpen())
   {
@@ -71,27 +61,39 @@ int main()
       // Closed window.
       case sf::Event::Closed:
         window.close();
+        std::cout << "Iteration: " << m_iteration << std::endl;
+        std::cout << "Stop the simulation." << std::endl;
         break;
 
       // Shortcut keyboard.
       case sf::Event::KeyPressed:
         if (app_event.key.code == sf::Keyboard::Space)
-          is_playing = !is_playing;
+          m_is_playing = !m_is_playing;
 
         // Increase the speed time.
-        else if (app_event.key.code == sf::Keyboard::Left and speed_time < MAX_TIME)
-          speed_time = std::min(speed_time + INTERVAL_TIME, MAX_TIME);
+        else if (app_event.key.code == sf::Keyboard::Left and m_speed_time < MAX_TIME)
+        {
+          m_speed_time = std::min(m_speed_time + INTERVAL_TIME, MAX_TIME);
+          std::cout << "Time: " << time << std::endl;
+        }
 
         // Decrease the speed time.
-        else if (app_event.key.code == sf::Keyboard::Right and speed_time > MIN_TIME)
-          speed_time = std::max(speed_time - INTERVAL_TIME, MIN_TIME);
+        else if (app_event.key.code == sf::Keyboard::Right and m_speed_time > MIN_TIME)
+        {
+          m_speed_time = std::max(m_speed_time - INTERVAL_TIME, MIN_TIME);
+          std::cout << "Time: " << time << std::endl;
+        }
 
         // Stop the simulation.
         else if (app_event.key.code == sf::Keyboard::Q)
+        {
           window.close();
+          std::cout << "Iteration: " << m_iteration << std::endl;
+          std::cout << "Stop the simulation." << std::endl;
+        }
 
         // Reset the simulation.
-        else if (app_event.key.code == sf::Keyboard::R and not is_playing)
+        else if (app_event.key.code == sf::Keyboard::R and not m_is_playing)
         {
           grid = Grid(GRID_SIZE);
           ants = GridAnts();
@@ -99,12 +101,13 @@ int main()
           initializeRandomPlaces(grid, ants, set_nests, NB_SUGAR, NB_ANT);
           consistencyTest(grid, ants, "Grid Initialization after Reset");
           grid_state = getGridState(grid, ants);
-          iteration = 0;
+          m_iteration = 0;
+          std::cout << "The simulation is reset." << std::endl;
         }
         break;
 
       case sf::Event::MouseButtonPressed:
-        if (not is_playing && app_event.mouseButton.button == sf::Mouse::Left)
+        if (not m_is_playing && app_event.mouseButton.button == sf::Mouse::Left)
         {
           int x = double(app_event.mouseButton.x) / SQUARE_SIZE;
           int y = double(app_event.mouseButton.y) / SQUARE_SIZE;
@@ -131,7 +134,7 @@ int main()
           }
         }
 
-        else if (not is_playing && app_event.mouseButton.button == sf::Mouse::Right)
+        else if (not m_is_playing && app_event.mouseButton.button == sf::Mouse::Right)
         {
           int x = double(app_event.mouseButton.x) / SQUARE_SIZE;
           int y = double(app_event.mouseButton.y) / SQUARE_SIZE;
@@ -157,7 +160,7 @@ int main()
           }
         }
 
-        else if (not is_playing && app_event.mouseButton.button == sf::Mouse::Middle)
+        else if (not m_is_playing && app_event.mouseButton.button == sf::Mouse::Middle)
         {
           int x = double(app_event.mouseButton.x) / SQUARE_SIZE;
           int y = double(app_event.mouseButton.y) / SQUARE_SIZE;
@@ -215,42 +218,38 @@ int main()
       }
 
     // Update the next grid of the simulation.
-    if (is_playing)
+    if (m_is_playing)
     {
       // Add a sugar every 100 iterations.
-      if (iteration % 100 == 0)
+      if (m_iteration % 100 == 0)
       {
         Place rand_sugar_place = grid.getRandEmptyPlace();
 
         if (rand_sugar_place.putSugar())
+        {
           grid.setPlace(rand_sugar_place);
+          std::cout << "A new pile of sugar appears." << std::endl;
+        }
       }
 
       updateSetAnts(grid, ants);
-      consistencyTest(grid, ants, "Simulation " + std::to_string(iteration));
+      consistencyTest(grid, ants, "Simulation " + std::to_string(m_iteration));
       grid.decreasePheroSugar(3);
       grid_state = getGridState(grid, ants);
       evolution(grid, ants, set_nests, 20, 10);
+      txt_pause.setString("Space to pause.");
+
       // Pause the simulation.
-      iteration++;
-      sf::sleep(sf::milliseconds(speed_time));
+      m_iteration++;
+      sf::sleep(sf::milliseconds(m_speed_time));
     }
-
-    // Set the text values.
-    txt_days.setString("Days: " + std::to_string(iteration));
-    txt_nb_ants.setString("Nb Ants: " + std::to_string(ants.getSize()));
-    txt_nests_size.setString("Nests Size: " + std::to_string(set_nests.getSize()));
-
-    std::string format_time = std::to_string((MAX_TIME - speed_time) / 100.);
-
-    format_time = format_time.substr(0, format_time.find(".") + 3);
-    txt_nests_size.setString("Speed Time: " + format_time);
+    else
+      txt_pause.setString("Space to play.");
 
     // Draw all elements of the windows.
-    window.draw(txt_days);
-    window.draw(txt_nb_ants);
-    window.draw(txt_nests_size);
+    window.draw(txt_pause);
+    window.draw(txt_mouse);
+    window.draw(txt_arrow);
     window.display();
   }
-  return 0;
 }

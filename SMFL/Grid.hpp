@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 class Grid
 {
@@ -102,7 +103,28 @@ void updateAnt(Ant &ant, Grid &grid);
  * @param ants The sets of ants.
 */
 void updateSetAnts(Grid &grid, GridAnts &ants);
-/***/
+/**
+ * Make an evolution if is possible.
+ * @param grid The grid.
+ * @param ants The sets of ants.
+ * @param set_nests The set of nests.
+ * @param nb_new_ant The number of sugar per nest required to create a new ant.
+ * @param nb_new_nest The number of ant per nest required to create a new nest.
+*/
 void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_new_ant = 5, unsigned int nb_new_nest = 50);
+/**
+ * Test if the simulation is consistent with the grid and the position of the ants.
+ * Throw an exception if an inconsistency is found.
+ * @param grid The grid containing all the simulation squares.
+ * @param ants The grid containing all the ants in the simulation.
+*/
+void consistencyTest(Grid &grid, GridAnts &ants, std::string title);
+/**
+ * Create a 2D vector with the state of each square.
+ * @param grid The grid containing all the simulation squares.
+ * @param ants The grid containing all the ants in the simulation.
+ * @return Returns a 2D vector of integer corresponding to the state of the square.
+*/
+std::vector<std::vector<int>> getGridState(Grid &grid, GridAnts &ants);
 
 #endif

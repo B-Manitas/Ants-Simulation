@@ -140,7 +140,7 @@ void setAnts(Grid &grid, GridAnts &ants, EnsCoord &set_ants)
   {
     Coord coord = set_ants.getNth(i);
     Place place = grid.getPlace(coord);
-    Ant ant = Ant(coord, i);
+    Ant ant = Ant(coord, ants.getNewIndex());
     ants.setAnt(ant);
     place.putAnt(ant);
     grid.setPlace(place);
@@ -297,7 +297,6 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
     {
       set_nests.add(new_nest_place.getCoord());
       grid.setPlace(new_nest_place);
-      std::cout << "A nest ant is created." << std::endl;
     }
   }
 
@@ -336,10 +335,86 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
       nest_with_food.consumeFood();
       ants.setAnt(new_ant);
       grid.setPlace(nest_nursery);
-      std::cout << "A new ant is born." << std::endl;
     }
   }
 
   else if (ants.getSize() >= LIMITS_ANT)
     std::cout << "It is overpopulation." << std::endl;
+}
+
+void consistencyTest(Grid &grid, GridAnts &ants, std::string title)
+{
+  std::ostringstream error_msg;
+
+  // Take the first test. Test if the ant's index and place match.
+  for (size_t i = 0; i < ants.getSize(); i++)
+  {
+    Ant ant = ants.getNth(i);
+    Place place = grid.getPlace(ant.getCoord());
+
+    if (place.getIdAnt() != ant.getIndex())
+    {
+      error_msg << title << std::endl;
+      error_msg << "Inconsistent Simulation Error: The index of an ant does not correspond to its place." << std::endl
+                << "Ant: " << ant << std::endl
+                << "place: " << place << std::endl;
+
+      throw std::runtime_error(error_msg.str());
+    }
+  }
+
+  // Take the second test. Test if the place has a ghost ant.
+  for (size_t y = 0; y < grid.getSize(); y++)
+    for (size_t x = 0; x < grid.getSize(); x++)
+    {
+      Place place = grid.getPlace(Coord(x, y));
+
+      if (place.isContainingAnt() && not ants.isContainingAnts(place.getIdAnt()))
+      {
+        error_msg << title << std::endl;
+        error_msg << "Inconsistent Simulation Error: A place contains an ant that doesn't exist." << std::endl
+                  << "place: " << place << std::endl
+                  << "Ants: " << ants << std::endl;
+
+        throw std::runtime_error(error_msg.str());
+      }
+    }
+}
+
+std::vector<std::vector<int>> getGridState(Grid &grid, GridAnts &ants)
+{
+  std::vector<std::vector<int>> color_grid(GRID_SIZE);
+
+  for (size_t y = 0; y < grid.getSize(); y++)
+    for (size_t x = 0; x < grid.getSize(); x++)
+    {
+      Coord square_coord = Coord(x, y);
+      Place square = grid.getPlace(square_coord);
+      Ant ant = Ant();
+
+      if (ants.isContainingAntsCoord(square_coord))
+        ant = ants.getAnt(square_coord);
+
+      // Square containing an ant nest.
+      if (square.isContainingAntNest())
+        color_grid[y].push_back(int(place_state::nest));
+
+      // Square containing some sugars.
+      else if (square.isContainingSugar())
+        color_grid[y].push_back(int(place_state::sugar));
+
+      // Square containing an ant.
+      else if (square.isContainingAnt())
+        color_grid[y].push_back(int(place_state::ant));
+
+      // Square containing sugar pheromone.
+      else if (square.isContainingPheroSugar())
+        color_grid[y].push_back(int(place_state::phero_sugar));
+
+      // The square is empty.
+      else
+        color_grid[y].push_back(int(place_state::empty));
+    }
+
+  return color_grid;
 }
