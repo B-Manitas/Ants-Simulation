@@ -2,7 +2,7 @@
 #include "Ant.hpp"
 #include "Place.hpp"
 
-bool condition1(Ant ant, Place p2) { return p2.isContainingAnt(); };
+bool condition1(Place p1) { return p1.isContainingWater(); };
 bool condition2(Ant ant, Place p2) { return ant.lookForSugar() && p2.isContainingSugar(); };
 bool condition3(Ant ant, Place p2) { return not ant.lookForSugar() && p2.isContainingAntNest(); };
 bool condition4(Ant ant, Place p1, Place p2) { return not ant.lookForSugar() && p2.isEmpty() && isCloserToNest(p2, p1); };
@@ -14,7 +14,7 @@ bool condtionNth(int n, Ant ant, Place p1, Place p2)
   switch (n)
   {
   case 1:
-    return false;
+    return condition1(p1);
   case 2:
     return condition2(ant, p2);
   case 3:

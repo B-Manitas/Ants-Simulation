@@ -20,7 +20,7 @@ all: Main Test clean
 	./Test
 	./Main
 
-simulation: Main clean
+simulation: Main
 	./Main
 
 test: Test clean

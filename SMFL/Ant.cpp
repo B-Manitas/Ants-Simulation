@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-Ant::Ant(Coord c, int index) : m_coord{c}, m_id{index}, m_isCarryingSugar{false}
+Ant::Ant(Coord c, int index) : m_coord{c}, m_id{index}, m_isCarryingSugar{false}, m_is_alive{true}
 {
   if (m_id < 0 and m_id != -1)
   {

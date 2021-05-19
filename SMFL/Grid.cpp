@@ -134,6 +134,16 @@ void setSugars(Grid &grid, EnsCoord &set_sugars)
   }
 }
 
+void setWater(Grid &grid, EnsCoord &set_water)
+{
+  for (size_t i = 0; i < set_water.getSize(); i++)
+  {
+    Place place = grid.getPlace(set_water.getNth(i));
+    place.putWater();
+    grid.setPlace(place);
+  }
+}
+
 void setAnts(Grid &grid, GridAnts &ants, EnsCoord &set_ants)
 {
   for (size_t i = 0; i < set_ants.getSize(); i++)
@@ -157,7 +167,9 @@ void setAntsNests(Grid &grid, EnsCoord &set_nests)
   }
 }
 
-void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_sugar, unsigned int nb_ants)
+void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests,
+                            unsigned int nb_sugar, unsigned int nb_ants,
+                            bool add_sugar)
 {
   // Test if the initialization values are consistent.
   if (nb_sugar + nb_ants + 4 > GRID_SIZE)
@@ -179,7 +191,7 @@ void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, uns
 
   // Create the random sugar set.
   EnsCoord set_sugars;
-  while (set_sugars.getSize() < nb_sugar)
+  while (set_sugars.getSize() < nb_sugar and add_sugar)
   {
     Coord rand_coord = grid.getRandPlace().getCoord();
 
@@ -187,6 +199,19 @@ void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, uns
     {
       set_places_taken.add(rand_coord);
       set_sugars.add(rand_coord);
+    }
+  }
+
+  // Create the random water set.
+  EnsCoord set_water;
+  while (set_water.getSize() < 5)
+  {
+    Coord rand_coord = grid.getRandPlace().getCoord();
+
+    if (not set_places_taken.isContained(rand_coord))
+    {
+      set_places_taken.add(rand_coord);
+      set_water.add(rand_coord);
     }
   }
 
@@ -215,7 +240,7 @@ void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, uns
 
   // Create the random ants set.
   EnsCoord set_ants;
-  while (set_ants.getSize() < nb_ants)
+  while (set_ants.getSize() < nb_ants and add_sugar)
   {
     for (size_t i = 0; i < set_nests_neighbors.getSize(); i++)
     {
@@ -233,12 +258,13 @@ void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, uns
     }
   }
 
-  initializeGrid(grid, ants, set_sugars, set_ants, set_nests);
+  initializeGrid(grid, ants, set_water, set_sugars, set_ants, set_nests);
   grid.linearizePheroAntNest();
 }
 
-void initializeGrid(Grid &grid, GridAnts &ants, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests)
+void initializeGrid(Grid &grid, GridAnts &ants, EnsCoord &set_water, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests)
 {
+  setWater(grid, set_water);
   setSugars(grid, set_sugars);
   setAnts(grid, ants, set_ants);
   setAntsNests(grid, set_nests);
@@ -252,16 +278,22 @@ void updateAnt(Ant &ant, Grid &grid)
 
   set_neighbors.shuffle();
 
-  for (int nb_rule = 2; nb_rule < 8; nb_rule++)
+  for (int nb_rule = 1; nb_rule < 8; nb_rule++)
     for (size_t i = 0; i < set_neighbors.getSize(); i++)
     {
       Coord coord_neighbour = set_neighbors.getNth(i);
       Place p2 = grid.getPlace(coord_neighbour);
       if (condtionNth(nb_rule, ant, p1, p2))
       {
-        actionNth(nb_rule, ant, p1, p2);
-        grid.setPlace(p1);
-        grid.setPlace(p2);
+        if (nb_rule != 1)
+        {
+          actionNth(nb_rule, ant, p1, p2);
+          grid.setPlace(p1);
+          grid.setPlace(p2);
+        }
+        else
+          ant.dies();
+
         return;
       }
     }
@@ -273,24 +305,51 @@ void updateSetAnts(Grid &grid, GridAnts &ants)
   {
     Ant ant = ants.getNth(i);
     updateAnt(ant, grid);
-    ants.setAnt(ant);
+    if (ant.isAlive())
+      ants.setAnt(ant);
+
+    else
+    {
+      Place place = grid.getPlace(ant.getCoord());
+      place.removeAnt();
+      grid.setPlace(place);
+      ants.remove(ant);
+    }
   }
 }
 
-void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_new_ant, unsigned int nb_new_nest)
+bool evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, bool &is_enough_food,
+               int &reserve_sugar, int iteration, int nb_new_ant, int nb_new_nest, int new_sugar)
 {
+  // Add a sugar every X iterations.
+  if (iteration > 0 and iteration % (50 + rand() % 50) == 0)
+  {
+    Place rand_sugar_place = grid.getRandEmptyPlace();
+
+    if (rand_sugar_place.putSugar())
+      grid.setPlace(rand_sugar_place);
+  }
+
+  // Remove sugar of the nest every X iterations.
+  if (iteration > 0 and iteration % (200 + rand() % 150) == 0)
+  {
+    Coord nest_coord = set_nests.getRandNth();
+    Place nest = grid.getPlace(nest_coord);
+    nest.consumeFood(ants.getSize() / 3 + 1);
+    grid.setPlace(nest);
+  }
+
   // Calculate the quantity of food for all the nests.
-  unsigned int nb_stored_food = 0;
-  unsigned const LIMITS_ANT = GRID_SIZE * GRID_SIZE * .5;
+  reserve_sugar = 0;
 
   for (size_t i = 0; i < set_nests.getSize(); i++)
   {
     Coord nest_coord = set_nests.getNth(i).getCoord();
-    nb_stored_food += grid.getPlace(nest_coord).getFoodReserve();
+    reserve_sugar += grid.getPlace(nest_coord).getFoodReserve();
   }
 
   // Test if a new nest can be created.
-  if (ants.getSize() / set_nests.getSize() >= nb_new_nest * .1)
+  if (reserve_sugar > 0 and ants.getSize() / set_nests.getSize() >= nb_new_nest * .1)
   {
     Place new_nest_place = grid.getRandEmptyNeighbour(set_nests.getRandNth());
     if (not new_nest_place.isGhost() and new_nest_place.putAntNest())
@@ -301,9 +360,8 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
   }
 
   // Test if a new ant can be born.
-  else if (nb_stored_food / ants.getSize() >= nb_new_ant * .1 and ants.getSize() < LIMITS_ANT)
+  else if (ants.getSize() < LIMITS_ANT + 15 and reserve_sugar > 0 and reserve_sugar / ants.getSize() >= 1)
   {
-
     // Get a nest place containing food.
     Place nest_with_food = grid.getPlace(set_nests.getNth(0));
     for (size_t i = 1; i < set_nests.getSize(); i++)
@@ -338,8 +396,30 @@ void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_
     }
   }
 
-  else if (ants.getSize() >= LIMITS_ANT)
-    std::cout << "It is overpopulation." << std::endl;
+  // Test if there is a famine.
+  else if (ants.getSize() > LIMITS_ANT or reserve_sugar < ants.getSize() * 0.9)
+  {
+    is_enough_food = false;
+    int nb_ants = ants.getSize() - 1;
+    int nb_ants_die = ants.getSize() > 200 ? (nb_ants - nb_ants * .1) : 1;
+
+    for (int i = nb_ants_die; i > 0; i--)
+    {
+      Ant ant = ants.getNth(ants.getSize() - i);
+      Place place = grid.getPlace(ant.getCoord());
+      place.removeAnt();
+      grid.setPlace(place);
+      ants.remove(ant);
+
+      if (ants.getSize() < 1)
+        return false;
+    }
+  }
+
+  else
+    is_enough_food = true;
+
+  return true;
 }
 
 void consistencyTest(Grid &grid, GridAnts &ants, std::string title)
@@ -402,6 +482,10 @@ std::vector<std::vector<int>> getGridState(Grid &grid, GridAnts &ants)
       // Square containing some sugars.
       else if (square.isContainingSugar())
         color_grid[y].push_back(int(place_state::sugar));
+
+      // Square containing some sugars.
+      else if (square.isContainingWater())
+        color_grid[y].push_back(int(place_state::water));
 
       // Square containing an ant.
       else if (square.isContainingAnt())

@@ -4,11 +4,11 @@
 
 #include <sstream>
 
-bool Place::storeFood()
+bool Place::storeFood(int quantity)
 {
   if (isContainingAntNest())
   {
-    m_food_reserve++;
+    m_food_reserve += quantity;
     return true;
   }
 
@@ -42,6 +42,7 @@ bool Place::putAntNest()
   {
     m_pieceAntNest++;
     putPheroAntNest(1);
+    storeFood();
     return true;
   }
 
@@ -60,6 +61,14 @@ void Place::putPheroAntNest(double quantity)
     m_pheroAntNest = (quantity > 1) ? 1 : quantity;
 };
 
+bool Place::putWater()
+{
+  if (isEmpty())
+    m_is_water = true;
+
+  return m_is_water;
+}
+
 std::ostream &operator<<(std::ostream &out, const Place &place)
 {
   out << "{ "
@@ -67,8 +76,9 @@ std::ostream &operator<<(std::ostream &out, const Place &place)
       << "Id Ant: " << place.getIdAnt() << ", "
       << "Phero Ant: " << place.getPheroAntNest() << ", "
       << "Phero Sugar: " << place.getPheroSugar() << ", "
-      << "Ant: " << (place.isContainingAntNest() ? "Oui" : "Non") << ", "
-      << "Sugar: " << (place.isContainingSugar() ? "Oui" : "Non") << " }";
+      << "Ant: " << (place.isContainingAntNest() ? "Yes" : "No") << ", "
+      << "Sugar: " << (place.isContainingSugar() ? "Yes" : "No") << ", "
+      << "Water: " << (place.isContainingWater() ? "Yes" : "No") << " }";
 
   return out;
 }

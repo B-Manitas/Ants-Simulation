@@ -28,14 +28,15 @@ Ant GridAnts::getAnt(Coord const &coord) const
 
 Ant GridAnts::getNth(unsigned int const n)
 {
-  if (n <= getSize())
+  if (n >= 0 and n < getSize())
     return m_grid[n];
   else
   {
     std::ostringstream msg_error;
     msg_error << "Error getNth GridAnts : The parameter n= "
               << n
-              << " is out of range.";
+              << " is out of range.\nMax size: "
+              << getSize();
     throw std::invalid_argument(msg_error.str());
   }
 }

@@ -7,6 +7,7 @@
 
 const int GRID_SIZE = 80;
 const int SQUARE_SIZE = 10;
+const int LIMITS_ANT = 100;
 const int INITIAL_SPEED_TIME = 100;
 const int INTERVAL_TIME = 5;
 const int MAX_TIME = 200;
@@ -18,6 +19,7 @@ enum class place_state
   ant,
   nest,
   sugar,
+  water,
   phero_sugar,
   empty
 };

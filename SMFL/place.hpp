@@ -10,32 +10,30 @@ class Place
 {
 private:
   Coord m_coord;
-  int m_idAnt;
-  int m_food_reserve;
-  int m_pieceSugar;
-  int m_pieceAntNest;
+  int m_idAnt, m_food_reserve;
+  int m_pieceSugar, m_pieceAntNest;
   int m_pheroSugar;
   double m_pheroAntNest;
-  bool m_is_ghost;
+  bool m_is_ghost, m_is_water;
 
 public:
   Place() : m_coord{Coord()}, m_idAnt{-1},
             m_food_reserve{0},
             m_pieceSugar{0}, m_pieceAntNest{0},
             m_pheroSugar{0}, m_pheroAntNest{0},
-            m_is_ghost{false} {};
+            m_is_ghost{false}, m_is_water{false} {};
 
   Place(Coord coord) : m_coord{coord}, m_idAnt{-1},
                        m_food_reserve{0},
                        m_pieceSugar{0}, m_pieceAntNest{0},
                        m_pheroSugar{0}, m_pheroAntNest{0},
-                       m_is_ghost{false} {};
+                       m_is_ghost{false}, m_is_water{false} {};
 
   Place(bool is_ghost) : m_coord{Coord()}, m_idAnt{-1},
                          m_food_reserve{0},
                          m_pieceSugar{0}, m_pieceAntNest{0},
                          m_pheroSugar{0}, m_pheroAntNest{0},
-                         m_is_ghost{is_ghost} {};
+                         m_is_ghost{is_ghost}, m_is_water{false} {};
 
   /**Get the coordinate of the place.*/
   Coord getCoord() const { return m_coord; };
@@ -58,6 +56,8 @@ public:
   bool isContainingFood() const { return m_food_reserve > 0; };
   /**Returns true if the place contains sugar, otherwise false.*/
   bool isContainingSugar() const { return m_pieceSugar > 0; };
+  /**Return if the place is a ghost place.*/
+  bool isContainingWater() const { return m_is_water; };
   /**Returns true if the place contains an ant nest, otherwise false.*/
   bool isContainingAntNest() const { return m_pieceAntNest > 0; };
   /**Returns true if the place contains an ant, otherwise false.*/
@@ -70,9 +70,9 @@ public:
   bool isOnSugarTrail() const { return m_pheroSugar > 0; };
 
   /**Store a food if the place is a nested.*/
-  bool storeFood();
-  /**A food is eaten.*/
-  void consumeFood() { m_food_reserve = std::max(m_food_reserve - 1, 0); };
+  bool storeFood(int quantity = 1);
+  /**Eat a quantity of food.*/
+  void consumeFood(int quantity = 1) { m_food_reserve = m_food_reserve - quantity; };
   /**
    * Put sugar on the place.
    * @param quantity The quantity of sugar. By default, the quantity is 5.
@@ -102,6 +102,10 @@ public:
    * @return Return true if the pheromones from the ant nest has been putted, otherwise false.
   */
   void putPheroAntNest(double quantity);
+  /**
+   * Put pheromones on the place.
+  */
+  bool putWater();
 
   /**
    * Remove sugar on the place.
@@ -112,6 +116,8 @@ public:
   void removeAnt() { m_idAnt = -1; };
   /** Remove sugar pheromone on the place.*/
   void removePheroSugar() { m_pheroSugar = 0; };
+  /** Remove water on the place.*/
+  void removeWater() { m_is_water = false; };
   /**
    * Decrease the quantity of sugar pheromone on the place.
    * @param quantity The quantity of sugar. By default, the quantity is 5.

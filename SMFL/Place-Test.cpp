@@ -133,8 +133,9 @@ TEST_CASE("Place operator <<.")
               << "Id Ant: -1, "
               << "Phero Ant: 0, "
               << "Phero Sugar: 0, "
-              << "Ant: Non, "
-              << "Sugar: Non }";
+              << "Ant: No, "
+              << "Sugar: No, "
+              << "Water: No }";
 
   CHECK(stream.str() == streamCheck.str());
 }

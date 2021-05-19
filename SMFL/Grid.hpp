@@ -60,6 +60,12 @@ public:
 */
 void setSugars(Grid &grid, EnsCoord &set_sugars);
 /**
+ * Set water in the grid.
+ * @param grid The grid.
+ * @param set_water The set containing the coordinates of the sugars. 
+*/
+void set_water(Grid &grid, EnsCoord &set_water);
+/**
  * Set ants in the grid.
  * @param grid The grid.
  * @param ants The grid of ants.
@@ -80,7 +86,7 @@ void setAntsNests(Grid &grid, EnsCoord &set_nests);
  * @param nb_sugar The number of sugars. By default, the number is 5.
  * @param nb_ants The numer of ants. By default, the number is 10.
 */
-void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_sugar = 5, unsigned int nb_ants = 10);
+void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_sugar = 5, unsigned int nb_ants = 10, bool add_sugar = true);
 /**
  * Initialize the grid with the sets of sugars, ants and nests.
  * @param grid The grid.
@@ -89,7 +95,7 @@ void initializeRandomPlaces(Grid &grid, GridAnts &ants, EnsCoord &set_nests, uns
  * @param set_ants The set containing the coordinates of the ants.
  * @param set_nests The set containing the coordinates of the nests.
 */
-void initializeGrid(Grid &grid, GridAnts &ants, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests);
+void initializeGrid(Grid &grid, GridAnts &ants, EnsCoord &set_water, EnsCoord &set_sugars, EnsCoord &set_ants, EnsCoord &set_nests);
 
 /**
  * Update an ants.
@@ -108,10 +114,14 @@ void updateSetAnts(Grid &grid, GridAnts &ants);
  * @param grid The grid.
  * @param ants The sets of ants.
  * @param set_nests The set of nests.
- * @param nb_new_ant The number of sugar per nest required to create a new ant.
- * @param nb_new_nest The number of ant per nest required to create a new nest.
+ * @param is_enough_food True if there is enough food, otherwise false.
+ * @param nb_new_ant The number of sugar per nest required to create a new ant. By default, it's 5.
+ * @param nb_new_nest The number of ant per nest required to create a new nest. By default, it's 50.
+ * @param new_sugar The number of ant per nest required to create a new nest. By default, it's 71.
+ * @return Return true if there is ants. Otherwise, return false.
 */
-void evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, unsigned int nb_new_ant = 5, unsigned int nb_new_nest = 50);
+bool evolution(Grid &grid, GridAnts &ants, EnsCoord &set_nests, bool &is_enough_food, int &reserve_sugar,
+               int iteration, int nb_new_ant = 5, int nb_new_nest = 50, int new_sugar = 71);
 /**
  * Test if the simulation is consistent with the grid and the position of the ants.
  * Throw an exception if an inconsistency is found.

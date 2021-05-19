@@ -9,7 +9,13 @@
  * @param ant The ant.
  * @param p2 The place p2.
 */
-bool condition1(Ant ant, Place p2);
+bool condition0(Ant ant, Place p2);
+/**
+ * Return true if walk on the water place, otherwise false. 
+ * @param ant The ant.
+ * @param p1 The place p1.
+*/
+bool condition1(Place p1);
 /**
  * Returns true if the ant is looking for sugar and location p2 contains sugar, otherwise false. 
  * @param ant The ant.

@@ -8,9 +8,9 @@
 TEST_SUITE_BEGIN("Conditions tests.");
 TEST_CASE("Condition 1")
 {
-  Place p2 = Place(Coord());
-  p2.putAnt(Ant(Coord(0, 0), 0));
-  CHECK(condition1(Ant(Coord(1, 0), 1), p2));
+  Place p = Place(Coord());
+  p.putWater();
+  CHECK(condition1(p));
 }
 
 TEST_CASE("Condition 2")
